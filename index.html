@@ -18,7 +18,7 @@
 </head>
 <body>
 
-    <!-- INSTANT CAPTION OVERRIDE SCREEN -->
+    <!-- INSTANT CAPTION SCREEN -->
     <div id="story-screen" class="screen">
         <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px;">🍬 THE SKITTLINI OUTBREAKINI 🍬</h2>
         <div id="story-text">Loading subtitles...</div>
@@ -51,7 +51,7 @@
     <script>
         const storyLines = [
             "[SCENE 1: COAL CORNER SHOP]\n\nSHUCEEB LEAVES THE GAMING HOUSE TO BUY A MASSIVE STASH OF SKITTLES FOR ALL HIS FRIENDS...",
-            "[SCENE 2: THE ENCOUNTER]\n\nAT THE CORNER, SHUCEEB SPOTS A WEIRD LOOKING GLOWING SPIDER CRAWLING ALONG THE CONCRETE WALL.",
+            "[SCENE 2: THE ENCOUNTER]\n\nAT THE CORNER, SHUCEEB SPOTS A WEIRD LOOKING GLOWING SPIDER CRAWRAMING ALONG THE CONCRETE WALL.",
             "[SCENE 3: THE INFECTION]\n\nTHE SPIDER SUDDENLY LEAPS ONTO A PASSING WOMAN! SHE INSTANTLY MUTATES INTO A HORRIFYING FLESH-EATING ALIEN!",
             "[SCENE 4: PEDAL TO THE METAL]\n\nSHUCEEB RUNS TO HIS SKITTLE CAR, SLAMS THE GAS, AND DRIFTS BACK TO THE HOUSE TO WARN THE CREW!",
             "[SCENE 5: FORTIFICATION]\n\nTHE BOYS AGREE TO FORTIFY THE BLOCK AND DROP DEFENSE TOWERS TO STOP THE SKITTLINI OUTBREAKINI!"
@@ -90,12 +90,12 @@
         let cash = 150, baseHp = 20, maxBaseHp = 20, waveNum = 1;
         let selectedType = null, selectedCost = 0;
         let enemies = [], towers = [], projectiles = [], lasers = [];
-        let waveActive = true, spawnCounter = 0, enemiesSpawning = 10;
+        let spawnCounter = 0, enemiesSpawning = 10, waveInProgess = false;
         let currentMouseX = 0, currentMouseY = 0;
 
         const path = [
-            {x: -20, y: 120}, {x: 250, y: 120}, {x: 250, y: 380}, 
-            {x: 550, y: 380}, {x: 550, y: 220}, {x: 820, y: 220}
+            {x: 0, y: 120}, {x: 250, y: 120}, {x: 250, y: 380}, 
+            {x: 550, y: 380}, {x: 550, y: 220}, {x: 750, y: 220}
         ];
 
         function initGameEngine() {
@@ -106,6 +106,10 @@
             });
             canvas.addEventListener("mousedown", placeDefenderUnit);
             setInterval(gameTick, 1000 / 30);
+            
+            // Start the first wave loop anchor
+            waveInProgess = true;
+            enemiesSpawning = 10;
             setTimeout(spawnZombieWave, 1000);
             
             setInterval(() => {
@@ -156,13 +160,14 @@
         }
 
         function spawnZombieWave() {
+            if (!waveInProgess) return;
             if (enemiesSpawning > 0) {
                 let eHp = 2 + Math.floor(waveNum * 1.6);
                 let speed = 1.2 + (waveNum * 0.04);
                 let isSpiderAlien = Math.random() < 0.25;
                 
                 enemies.push({ 
-                    x: path.x, y: path.y, 
+                    x: path[0].x, y: path[0].y, 
                     pathIndex: 0, 
                     hp: isSpiderAlien ? eHp * 0.7 : eHp, 
                     maxHp: isSpiderAlien ? eHp * 0.7 : eHp, 
@@ -171,11 +176,12 @@
                     color: isSpiderAlien ? "#ff00ff" : "#39e639"
                 });
                 enemiesSpawning--;
-                setTimeout(spawnZombieWave, Math.max(300, 1500 - waveNum * 50));
+                setTimeout(spawnZombieWave, Math.max(400, 1500 - waveNum * 50));
             }
         }
 
         function gameTick() {
+            // Update Zombie Positions Translation
             enemies.forEach((e, idx) => {
                 let target = path[e.pathIndex + 1];
                 let dist = Math.hypot(target.x - e.x, target.y - e.y);
@@ -254,20 +260,31 @@
                 }
             });
 
-            if (enemiesSpawning === 0 && enemies.length === 0) {
-                waveNum++; enemiesSpawning = 8 + (waveNum * 4);
-                updateUI();
-                setTimeout(spawnZombieWave, 3000);
+            // FIXED WAVE CLEAR CHECK TRIGGER BLOCK
+            if (waveInProgess && enemiesSpawning === 0 && enemies.length === 0) {
+                waveInProgess = false;
+                setTimeout(() => {
+                    waveNum++; 
+                    enemiesSpawning = 8 + (waveNum * 4);
+                    waveInProgess = true;
+                    updateUI();
+                    spawnZombieWave();
+                }, 3000);
             }
 
             // RENDERING LAYOUT ENGINE
             ctx.clearRect(0, 0, 800, 500);
 
+            // Path Road Terrain Drawing
             ctx.strokeStyle = "#333"; ctx.lineWidth = 44; ctx.lineCap = "round"; ctx.lineJoin = "round";
-            ctx.beginPath(); ctx.moveTo(path.x, path.y);
+            ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
             for(let i=1; i<path.length; i++) ctx.lineTo(path[i].x, path[i].y); ctx.stroke();
 
-            // Skittle Car Base Frame
+            // RED OUTBREAK PORTAL SPAWN MARKER (Where zombies spawn)
+            ctx.fillStyle = "#ff3300"; ctx.fillRect(0, 95, 15, 50);
+            ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 2; ctx.strokeRect(0, 95, 15, 50);
+
+            // Skittle Car Base Frame Target Position
             ctx.fillStyle = "#ff00ff"; ctx.fillRect(750, 195, 45, 25);
             ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(760, 222, 6, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(785, 222, 6, 0, Math.PI*2); ctx.fill();
             ctx.fillStyle = "#fff"; ctx.font = "bold 9px Arial"; ctx.fillText("SKITTLES", 752, 210);
