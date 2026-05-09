@@ -1,21 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Zombie.io | Survival Squad: Animated Intro</title>
+    <title>Zombie.io | Survival Squad</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         #game-wrapper { perspective: 800px; perspective-origin: 50% 30%; width: 100vw; height: 85vh; display: none; }
         canvas { background: #111411; border: 4px solid #ff3300; cursor: crosshair; margin: 40px auto; box-shadow: 0 20px 40px rgba(255, 51, 0, 0.5); transform: rotateX(45deg); transform-style: preserve-3d; }
-        
-        /* Cinematic Animated Cutscene Screen */
         .screen { padding: 40px; max-width: 700px; margin: auto; height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #cutscene-screen { transition: background 0.5s; }
-        #cutscene-text { font-size: 24px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff0000; min-height: 180px; text-align: left; width: 100%; white-space: pre-wrap; }
-        
-        /* Emergency Flashing Red Alert Effect */
-        .emergency-alert { background: #400000 !important; animation: flash-red 1s infinite alternate; }
-        @keyframes flash-red { 0% { background: #200000; } 100% { background: #500000; } }
-
         .char-btn { padding: 15px; margin: 8px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 16px; width: 240px; text-transform: uppercase; font-weight: bold; }
         .char-btn:hover { background: #00ff00; color: black; box-shadow: 0 0 15px #00ff00; }
         #ui-box { background: rgba(0,0,0,0.9); padding: 12px; border-bottom: 3px solid #ff3300; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; }
@@ -23,9 +14,8 @@
         .btn-upgrade:disabled { background: #444; color: #777; cursor: not-allowed; }
         .btn-menu { background: #00ff00; color: black; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         .btn-menu:hover { background: #00cc00; }
-        .next-btn { background: #fff; color: #000; border: none; padding: 10px 25px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 0 10px #fff; }
-        .next-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; }
-        
+        #cutscene-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff0000; min-height: 150px; text-align: left; width: 100%; }
+        .next-btn { background: #fff; color: #000; border: none; padding: 10px 25px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; }
         .hp-bar-container { width: 120px; background: #330000; border: 2px solid #ff0000; height: 16px; border-radius: 4px; display: inline-block; vertical-align: middle; }
         #ui-hp-fill { width: 100%; background: #00ff00; height: 100%; transition: width 0.1s; }
     </style>
@@ -34,9 +24,9 @@
 
     <!-- ANIMATED CUTSCENE SCREEN -->
     <div id="cutscene-screen" class="screen">
-        <h2 id="broadcast-title" style="color: #ff3300; font-size: 32px; letter-spacing: 2px;">💬 THE HOMEFRONT</h2>
+        <h2 id="cutscene-title" style="color: #ff3300; font-size: 32px; letter-spacing: 2px;">🪟 THE HOMEFRONT</h2>
         <div id="cutscene-text"></div>
-        <button id="cutscene-btn" class="next-btn" onclick="nextCutscene()" disabled>TYPING...</button>
+        <button id="cutscene-btn" class="next-btn" onclick="nextCutscene()">TYPING...</button>
     </div>
 
     <!-- CHARACTER SELECTION -->
@@ -94,76 +84,75 @@
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             } else if (type === 'type') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.03);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.03);
             }
         }
 
-        // Animated Typewriter Engine Setup
-        const cutsceneLines = [
-            "Shuceeb, Aadam, Yakoub, Daiyon, Arafat, and Naythan were chilled out at their house, completely screen-glued and playing video games together...",
-            "Suddenly, the power cuts out completely. The television screen flashes with heavy static, automatically launching an emergency news alert override.",
-            "Mr. Trump appears on the digital broadcast feed, sweating heavily: 'My fellow Americans... something has gone horribly wrong inside our classified research labs...'",
-            "'...A rogue scientist accidentally dropped and cracked open a mysterious alien egg asset. A dangerous cosmic viral spore is now turning citizens into flesh-eating monsters!'",
-            "Outside their window, blood-curdling screeches echo down the asphalt road. The friend squad is terrified. They scramble to lock doors and find tactical weapons to hold the line..."
+        function startMusic() {
+            setInterval(() => {
+                if (!isGameRunning) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                const notes = [130.81, 146.83, 164.81, 196.00];
+                osc.frequency.setValueAtTime(notes[Math.floor(Math.random() * notes.length)], audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            }, 400);
+        }
+
+        // Animate Cutscene Configuration
+        const cutsceneData = [
+            { title: "🪟 THE HOMEFRONT", text: "Shuceeb, Aadam, Yakoub, Daiyon, Arafat, and Naythan were chilled out at their house playing games together..." },
+            { title: "📺 EMERGENCY ALARM", text: "Suddenly, the power cuts out completely. The TV screen flashes green static, replacing your game with an urgent news alert." },
+            { title: "🎙️ WHITE HOUSE BROADCAST", text: "Mr. Trump flashes onto the screen, sweating heavily: 'My fellow Americans... something has gone horribly wrong inside our classified research facilities...'" },
+            { title: "🧪 THE ALIEN EGG ACCIDENT", text: "'...A high-ranking lead scientist accidentally dropped and cracked open a classified extra-terrestrial Alien Egg. Mutant spores are turning the entire neighborhood into monsters!'" },
+            { title: "🪚 LOCK THE DOORS", text: "Blood-curdling screeches echo directly outside your living room window. The crew is terrified. Grab your starter weapons and prepare to defend the perimeter!" }
         ];
         
-        let cutsceneIdx = 0;
-        let charIdx = 0;
-        let typingInterval;
+        let cutsceneIdx = 0, charIdx = 0, typingTimeout;
+        const textElement = document.getElementById("cutscene-text");
+        const titleElement = document.getElementById("cutscene-title");
+        const btnElement = document.getElementById("cutscene-btn");
 
-        function typeLine() {
-            const displayBox = document.getElementById("cutscene-text");
-            const btn = document.getElementById("cutscene-btn");
-            const screen = document.getElementById("cutscene-screen");
-            const title = document.getElementById("broadcast-title");
+        function typeSentence() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let currentText = cutsceneData[cutsceneIdx].text;
             
-            btn.disabled = true;
-            btn.innerText = "TYPING...";
-
-            // Visual enhancements based on story beats
-            if (cutsceneIdx === 2) {
-                screen.classList.add("emergency-alert");
-                title.innerText = "⚠️ EMERGENCY BROADCAST ⚠️";
-                title.style.color = "#ff0000";
-            } else if (cutsceneIdx === 0) {
-                screen.classList.remove("emergency-alert");
-                title.innerText = "💬 THE HOMEFRONT";
-                title.style.color = "#ff3300";
+            if (charIdx < currentText.length) {
+                textElement.innerHTML += currentText.charAt(charIdx);
+                if (currentText.charAt(charIdx) !== " ") playSound('type');
+                charIdx++;
+                btnElement.innerText = "TYPING...";
+                btnElement.disabled = true;
+                typingTimeout = setTimeout(typeSentence, 45); // Typing speed pace (45ms per char)
+            } else {
+                btnElement.innerText = cutsceneIdx === cutsceneData.length - 1 ? "LAUNCH GAME.IO" : "NEXT TRANSMISSION";
+                btnElement.disabled = false;
             }
-
-            displayBox.innerText = "";
-            charIdx = 0;
-
-            clearInterval(typingInterval);
-            typingInterval = setInterval(() => {
-                if (charIdx < cutsceneLines[cutsceneIdx].length) {
-                    displayBox.innerText += cutsceneLines[cutsceneIdx].charAt(charIdx);
-                    if (charIdx % 2 === 0) playSound('type');
-                    charIdx++;
-                } else {
-                    clearInterval(typingInterval);
-                    btn.disabled = false;
-                    btn.innerText = cutsceneIdx === cutsceneLines.length - 1 ? "ENTER THE APOCALYPSE" : "NEXT";
-                }
-            }, 30); // 30ms typing velocity speed per letter node
         }
 
         function nextCutscene() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            clearTimeout(typingTimeout);
             cutsceneIdx++;
-            if (cutsceneIdx < cutsceneLines.length) {
-                typeLine();
+            if (cutsceneIdx < cutsceneData.length) {
+                charIdx = 0;
+                textElement.innerHTML = "";
+                titleElement.innerText = cutsceneData[cutsceneIdx].title;
+                typeSentence();
             } else {
                 document.getElementById("cutscene-screen").style.display = "none";
                 document.getElementById("menu-screen").style.display = "flex";
             }
         }
         
-        // Start animation frame sequence immediately on window launch environment load
-        window.onload = () => { typeLine(); };
+        // Kick off your animated typewriter sequence right away
+        window.addEventListener("DOMContentLoaded", () => { typeSentence(); });
 
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
@@ -369,7 +358,7 @@
             ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, 0, player.size*0.6, 0, Math.PI*2); ctx.fill();
             ctx.restore();
 
-            // PROJECTILES
+            // PROJECTILES MECHANICS
             bullets.forEach((b, bIdx) => {
                 b.x += b.vx; b.y += b.vy;
                 ctx.fillStyle = b.color;
@@ -408,7 +397,7 @@
                 });
             });
 
-            // ENEMY BULLETS
+            // ENEMY PROJECTILES
             ctx.fillStyle = "#ff00ff";
             enemyBullets.forEach((eb, ebIdx) => {
                 eb.x += eb.vx; eb.y += eb.vy;
@@ -423,7 +412,7 @@
                 }
             });
 
-            // ZOMBIES AI
+            // ZOMBIES AI LOOP
             zombies.forEach((z, zIdx) => {
                 let zAngle = Math.atan2(player.y - z.y, player.x - z.x);
                 z.x += Math.cos(zAngle) * z.speed; z.y += Math.sin(zAngle) * z.speed;
@@ -451,7 +440,7 @@
                 }
             });
 
-            // BOSS LOOP
+            // BOSS MANAGEMENT LOOP
             bosses.forEach(boss => {
                 let bAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
                 boss.x += Math.cos(bAngle) * boss.speed; boss.y += Math.sin(bAngle) * boss.speed;
@@ -471,8 +460,4 @@
                 }
             });
 
-            requestAnimationFrame(gameLoop);
-        }
-
-        function updateUI() {
             
