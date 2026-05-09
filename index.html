@@ -1,53 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Zombie.io | Survival Squad: Endless Edition</title>
+    <title>Zombie.io | Survival Squad: Global Edition</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         #game-wrapper { perspective: 1000px; perspective-origin: 50% 20%; width: 100vw; height: 85vh; display: none; }
-        canvas { background: #111411; border: 4px solid #ff3300; cursor: crosshair; margin: 20px auto; box-shadow: 0 20px 40px rgba(255, 51, 0, 0.5); transform: rotateX(45deg); transform-style: preserve-3d; }
-        .screen { padding: 20px; max-width: 700px; margin: auto; height: 90vh; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; }
-        .char-btn { padding: 12px; margin: 6px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 15px; width: 240px; text-transform: uppercase; font-weight: bold; }
+        canvas { background: #111411; border: 4px solid #ff3300; cursor: crosshair; margin: 30px auto; box-shadow: 0 20px 40px rgba(255, 51, 0, 0.5); transform: rotateX(45deg); transform-style: preserve-3d; }
+        .screen { padding: 40px; max-width: 700px; margin: auto; height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; }
+        .char-btn { padding: 12px; margin: 6px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 15px; width: 230px; text-transform: uppercase; font-weight: bold; }
         .char-btn:hover { background: #00ff00; color: black; box-shadow: 0 0 15px #00ff00; }
         #ui-box { background: rgba(0,0,0,0.9); padding: 12px; border-bottom: 3px solid #ff3300; display: none; justify-content: space-around; font-size: 16px; font-weight: bold; align-items: center; }
         .btn-upgrade { background: #ff3300; color: white; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         .btn-upgrade:disabled { background: #444; color: #777; cursor: not-allowed; }
-        .btn-ui { background: #00ff00; color: black; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold; border-radius: 4px; margin: 0 5px; }
+        .btn-menu { background: #ffaa00; color: black; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         #cutscene-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff0000; min-height: 150px; }
         .next-btn { background: #fff; color: #000; border: none; padding: 10px 25px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; }
         .hp-bar-container { width: 100px; background: #330000; border: 2px solid #ff0000; height: 14px; border-radius: 4px; display: inline-block; vertical-align: middle; }
         #ui-hp-fill { width: 100%; background: #00ff00; height: 100%; }
-        
-        /* Tactical Overlay Popups */
-        .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        .menu-input { padding: 12px; font-size: 18px; background: #222; border: 2px solid #00ff00; color: #00ff00; text-align: center; font-family: inherit; margin-bottom: 15px; }
-        .leaderboard-container { width: 320px; max-height: 200px; overflow-y: auto; background: #111; border: 2px solid #ff3300; padding: 10px; margin-top: 15px; text-align: left; }
+        /* Pop-up Modals Styles */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 100; flex-direction: column; justify-content: center; align-items: center; }
+        .modal-content { background: #111; border: 3px solid #00ff00; padding: 30px; border-radius: 8px; max-width: 450px; width: 100%; text-align: center; box-shadow: 0 0 25px #00ff00; }
+        .leaderboard-list { text-align: left; background: #050505; border: 1px solid #333; padding: 10px; margin: 15px 0; height: 180px; overflow-y: auto; font-size: 14px; color: #fff; }
+        .name-input { padding: 10px; font-size: 16px; background: #222; color: #00ff00; border: 2px solid #00ff00; text-align: center; margin-bottom: 15px; text-transform: uppercase; width: 80%; }
     </style>
 </head>
 <body>
 
-    <!-- CUTSCENE SCREEN -->
+    <!-- STORY CAPTIONS LAYER -->
     <div id="cutscene-screen" class="screen">
         <h2 style="color: #ff3300; font-size: 32px;">⚠️ EMERGENCY BROADCAST ⚠️</h2>
-        <div id="cutscene-text">Initializing transmission profile scripts...</div>
+        <div id="cutscene-text">Setting connection parameters...</div>
         <button id="cutscene-btn" class="next-btn" onclick="nextCutscene()">NEXT</button>
     </div>
 
-    <!-- IDENTITY ENTRY & LEADERBOARD SCREEN -->
-    <div id="name-screen" class="screen" style="display:none;">
-        <h1>REGISTRATION STATION</h1>
-        <h3>ENTER YOUR RUNNER TAG:</h3>
-        <input type="text" id="player-tag" class="menu-input" value="Player1" maxlength="12">
-        <button class="next-btn" onclick="saveNameAndProceed()">CONFIRM IDENTITY</button>
-        
-        <h3 style="margin-top: 25px; color: #ff3300;">🏆 ENDLESS SURVIVAL LEADERBOARD</h3>
-        <div id="leaderboard-box" class="leaderboard-container"></div>
-    </div>
-
-    <!-- CHARACTER SELECTION -->
+    <!-- MAIN CHARACTER SQUAD CONFIGURATION MENU -->
     <div id="menu-screen" class="screen" style="display:none;">
         <h1>THE OUTBREAK HAS BEGUN</h1>
-        <h3>SELECT YOUR SURVIVOR & PERK:</h3>
+        <input type="text" id="player-custom-name" class="name-input" placeholder="ENTER YOUR SURVIVOR NAME" maxlength="12">
+        <h3>SELECT YOUR SURVIVOR MODEL & ABILITY:</h3>
         <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 600px;">
             <button class="char-btn" onclick="startGame('Shuceeb', '#00ffff', 'speed')">Shuceeb (Super Speed)</button>
             <button class="char-btn" onclick="startGame('Aadam', '#ff0055', 'tank')">Aadam (Heavy Armor)</button>
@@ -56,27 +46,38 @@
             <button class="char-btn" onclick="startGame('Arafat', '#00ff66', 'medic')">Arafat (Auto Heal)</button>
             <button class="char-btn" onclick="startGame('Naythan', '#ff6600', 'lucky')">Naythan (Insta-Kill Chance)</button>
         </div>
+        <button class="char-btn" style="border-color: #ffaa00; color: #ffaa00; margin-top: 20px;" onclick="toggleLeaderboardModal(true)">VIEW GLOBAL LEADERBOARD</button>
     </div>
 
-    <!-- TACTICAL PAUSE MENU OVERLAY -->
-    <div id="pause-overlay" class="overlay">
-        <h1 style="color: #00ff00; font-size: 40px; letter-spacing: 4px;">GAME PAUSED</h1>
-        <p style="color: #aaa;">Press 'ESC' or click button below to resume</p>
-        <button class="char-btn" onclick="togglePauseGame()">RESUME FIGHT</button>
-        <button class="char-btn" onclick="returnToMenu()" style="border-color: #ff3300; color: #ff3300;">LEAVE GAME</button>
+    <!-- PAUSE WINDOW MODAL SCREEN -->
+    <div id="pause-modal" class="modal">
+        <div class="modal-content">
+            <h1 style="color: #ffaa00; margin-top:0;">GAME PAUSED</h1>
+            <p style="color: #bbb;">Tactical simulation frozen.</p>
+            <button class="char-btn" onclick="togglePauseGame(false)">RESUME COMBAT</button><br>
+            <button class="char-btn" style="border-color:#ff3300; color:#ff3300;" onclick="leaveActiveGame()">LEAVE GAME</button>
+        </div>
     </div>
 
-    <!-- GAME UI & ARENA -->
+    <!-- GLOBAL HIGH SCORES LEADERBOARD MODAL -->
+    <div id="leaderboard-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: #00ff00; margin-top:0;">🏆 ENDLESS SURVIVAL RECORDS</h2>
+            <div id="leaderboard-container" class="leaderboard-list">Loading files...</div>
+            <button class="char-btn" onclick="toggleLeaderboardModal(false)">CLOSE RECORDS</button>
+        </div>
+    </div>
+
+    <!-- ACTIVE HUD INTERFACE AND HEADS-UP DISPLAY -->
     <div id="ui-box">
-        <button class="btn-ui" onclick="togglePauseGame()">PAUSE (ESC)</button>
-        <div>Tag: <span id="ui-tag" style="color: #00ff00;">John</span></div>
+        <button class="btn-menu" onclick="togglePauseGame(true)">PAUSE</button>
         <div>Survivor: <span id="ui-name" style="color:yellow;">---</span></div>
         <div>HP: <div class="hp-bar-container"><div id="ui-hp-fill"></div></div></div>
-        <div>Round: <span id="ui-round" style="color:#ff3300;">1</span></div>
+        <div>Round: <span id="ui-round" style="color: #ff3300;">1</span>/100</div>
         <div>Weapon: <span id="ui-weapon" style="color: #ffcc00;">M1911 Pistol</span></div>
         <div>Ammo: <span id="ui-ammo" style="color: #ff00ff;">7/7</span> <span id="ui-reloading" style="color: red; display: none;">[RELOAD]</span></div>
         <div>Cash: $<span id="ui-cash">0</span></div>
-        <button id="up-btn" class="btn-upgrade" onclick="buyUpgrade()">UPGRADE ($50)</button>
+        <button id="up-btn" class="btn-upgrade" onclick="buyUpgrade()">UPGRADE GUN ($50)</button>
     </div>
 
     <div id="game-wrapper">
@@ -101,6 +102,11 @@
                 gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.08);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'reload') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
             }
         }
 
@@ -110,86 +116,44 @@
             "[SCENE 3: TRUMP BROADCAST]\n\nMr. Trump appears on camera, visibly sweating: 'My fellow Americans... a rogue scientist inside our classified labs accidentally cracked open a secret Alien Egg asset...'",
             "[SCENE 4: MOBILIZATION]\n\nThe viral spore is turning citizens into mutants! Blood-curdling screeches fill the street outside. Grab your tactical firearms!'"
         ];
-        
         let cutsceneIdx = 0;
+
         function showCaption() {
             document.getElementById("cutscene-text").innerText = cutsceneLines[cutsceneIdx];
-            document.getElementById("cutscene-btn").innerText = cutsceneIdx === cutsceneLines.length - 1 ? "PROCEED TO SETUP" : "NEXT";
+            document.getElementById("cutscene-btn").innerText = cutsceneIdx === cutsceneLines.length - 1 ? "START SURVIVAL SQUAD" : "NEXT CAPTION";
         }
-
         function nextCutscene() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             cutsceneIdx++;
-            if (cutsceneIdx < cutsceneLines.length) {
-                showCaption();
-            } else {
-                document.getElementById("cutscene-screen").style.display = "none";
-                document.getElementById("name-screen").style.display = "flex";
-                renderLeaderboard();
-            }
+            if (cutsceneIdx < cutsceneLines.length) { showCaption(); } 
+            else { document.getElementById("cutscene-screen").style.display = "none"; document.getElementById("menu-screen").style.display = "flex"; loadLeaderboardData(); }
         }
-        showCaption(); // Immediate display script patch bypass
+        showCaption();
 
-        // Leaderboard Cloud Mock Engine Core
-        function getLeaderboardData() {
-            let data = localStorage.getItem("zombie_io_board");
-            return data ? JSON.parse(data) : [
-                { name: "Shuceeb", round: 45 },
-                { name: "Aadam", round: 32 },
-                { name: "Daiyon", round: 28 }
-            ];
-        }
-
-        function saveScore(name, finalRound) {
-            let board = getLeaderboardData();
-            let matchedUser = board.find(u => u.name.toLowerCase() === name.toLowerCase());
-            if (matchedUser) {
-                if(finalRound > matchedUser.round) matchedUser.round = finalRound;
-            } else {
-                board.push({ name: name, round: finalRound });
-            }
-            board.sort((a, b) => b.round - a.round);
-            localStorage.setItem("zombie_io_board", JSON.stringify(board.slice(0, 8)));
-        }
-
-        function renderLeaderboard() {
-            let board = getLeaderboardData();
-            let html = "";
-            board.forEach((entry, index) => {
-                html += `<div>${index + 1}. <b>${entry.name}</b> - Round ${entry.round} ${entry.round >= 100 ? '👑' : ''}</div>`;
-            });
-            document.getElementById("leaderboard-box").innerHTML = html;
-        }
-
-        let customPlayerTag = "Player1";
-        function saveNameAndProceed() {
-            let inputName = document.getElementById("player-tag").value.trim();
-            customPlayerTag = inputName !== "" ? inputName : "Player1";
-            document.getElementById("ui-tag").innerText = customPlayerTag;
-            document.getElementById("name-screen").style.display = "none";
-            document.getElementById("menu-screen").style.display = "flex";
-        }
-
-        // Gameplay Main Loops System Variables
+        // Canvas Engine Parameters Map Configuration
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         let cash = 0, lvl = 1, cost = 50, hp = 100, currentWeapon = "M1911 Pistol", currentRound = 1;
-        let player = { x: 400, y: 275, size: 20, color: '#00ffff', speed: 4, angle: 0, perk: '' };
+        let player = { x: 400, y: 275, size: 20, color: '#00ffff', speed: 4, angle: 0, perk: '', customName: '' };
         let bullets = [], enemyBullets = [], zombies = [], bosses = [];
         let keys = {}, mouseX = 0, mouseY = 0;
         let isGameRunning = false, isPaused = false, zombieInterval, medicInterval;
-        let bossActive = false, totalZombiesToKill = 10, zombiesKilledThisRound = 0, currentRoundZombiesSpawned = 0;
+        let bossActive = false, enemiesDefeatedInRound = 0, roundSpawnTotal = 10;
         
         let currentAmmo = 7, maxAmmo = 7, isReloading = false, reloadTimer = 0, weaponCooldown = 0;
         let tier1Defeated = false, tier2Defeated = false, tier3Defeated = false, tier4Defeated = false;
 
-        function startGame(name, color, perk) {
+        function startGame(baseModelName, color, perk) {
+            let enteredName = document.getElementById("player-custom-name").value.trim().toUpperCase();
+            player.customName = enteredName || baseModelName.toUpperCase();
+            
             cash = 0; lvl = 1; cost = 50; hp = 100; currentWeapon = "M1911 Pistol"; currentRound = 1;
-            bullets = []; enemyBullets = []; zombies = []; bosses = []; keys = {}; 
-            bossActive = false; zombiesKilledThisRound = 0; currentRoundZombiesSpawned = 0; totalZombiesToKill = 10;
+            enemiesDefeatedInRound = 0; roundSpawnTotal = 10;
+            bullets = []; enemyBullets = []; zombies = []; bosses = []; keys = {}; bossActive = false;
+            tier1Defeated = false; tier2Defeated = false; tier3Defeated = false; tier4Defeated = false;
             isReloading = false; reloadTimer = 0; weaponCooldown = 0; isPaused = false;
-            player.x = 400; player.y = 275;
-            player.color = color; player.perk = perk;
+            
+            player.x = 400; player.y = 275; player.color = color; player.perk = perk;
             player.speed = perk === 'speed' ? 5.5 : 4;
             if (perk === 'tactical') { lvl = 5; cost = 120; }
             
@@ -197,8 +161,6 @@
             currentAmmo = maxAmmo;
             updateUI();
 
-            document.getElementById("ui-name").innerText = name;
-            document.getElementById("ui-name").style.color = color;
             document.getElementById("menu-screen").style.display = "none";
             document.getElementById("ui-box").style.display = "flex";
             document.getElementById("game-wrapper").style.display = "block";
@@ -210,34 +172,97 @@
             requestAnimationFrame(gameLoop);
         }
 
-        function returnToMenu() {
-            saveScore(customPlayerTag, currentRound);
-            isGameRunning = false;
-            isPaused = false;
-            clearTimeout(zombieInterval);
-            clearInterval(medicInterval);
-            document.getElementById("pause-overlay").style.display = "none";
-            document.getElementById("ui-box").style.display = "none";
-            document.getElementById("game-wrapper").style.display = "none";
-            document.getElementById("name-screen").style.display = "flex";
-            renderLeaderboard();
+        function togglePauseGame(pauseState) {
+            if (!isGameRunning) return;
+            isPaused = pauseState;
+            document.getElementById("pause-modal").style.display = pauseState ? "flex" : "none";
         }
 
-        function togglePauseGame() {
-            if(!isGameRunning) return;
-            isPaused = !isPaused;
-            document.getElementById("pause-overlay").style.display = isPaused ? "flex" : "none";
-            if(!isPaused) requestAnimationFrame(gameLoop);
+        function leaveActiveGame() {
+            isGameRunning = false;
+            togglePauseGame(false);
+            clearTimeout(zombieInterval);
+            clearInterval(medicInterval);
+            document.getElementById("ui-box").style.display = "none";
+            document.getElementById("game-wrapper").style.display = "none";
+            document.getElementById("menu-screen").style.display = "flex";
+            loadLeaderboardData();
+        }
+
+        function handlePlayerDeath() {
+            isGameRunning = false;
+            clearTimeout(zombieInterval);
+            clearInterval(medicInterval);
+            saveLeaderboardRecord(player.customName, currentRound, lvl);
+            alert(`GAME OVER!\n${player.customName} survived to Round ${currentRound} (Gun Lvl ${lvl}).`);
+            leaveActiveGame();
+        }
+
+        function checkRoundProgression() {
+            if (enemiesDefeatedInRound >= roundSpawnTotal && zombies.length === 0 && bosses.length === 0) {
+                currentRound++;
+                if (currentRound > 100) {
+                    saveLeaderboardRecord(player.customName, 100, lvl);
+                    alert("VICTORY! SQUAD SURVIVED ROUND 100!");
+                    leaveActiveGame();
+                    return;
+                }
+                enemiesDefeatedInRound = 0;
+                roundSpawnTotal = 10 + (currentRound * 4);
+                if (currentRound % 10 === 0) triggerMilestoneBoss();
+                updateUI();
+            }
+        }
+
+        // Leaderboard Cloud System Simulation Array via LocalStorage API
+        function saveLeaderboardRecord(name, round, gunLvl) {
+            let records = JSON.parse(localStorage.getItem("zombie_io_scores")) || [];
+            records.push({ name: name, round: round, gunLvl: gunLvl, date: new Date().toLocaleDateString() });
+            records.sort((a,b) => b.round - a.round || b.gunLvl - a.gunLvl);
+            localStorage.setItem("zombie_io_scores", JSON.stringify(records.slice(0, 50)));
+        }
+
+        function loadLeaderboardData() {
+            let records = JSON.parse(localStorage.getItem("zombie_io_scores")) || [];
+            let container = document.getElementById("leaderboard-container");
+            if(records.length === 0) {
+                container.innerHTML = "<p style='color:#777; text-align:center;'>No structural data found yet.</p>";
+                return;
+            }
+            let html = "<table style='width:100%; border-collapse:collapse;'><tr><th>NAME</th><th>ROUND</th><th>GUN LVL</th></tr>";
+            records.forEach(r => {
+                let glowStyle = r.round >= 100 ? "style='color:cyan; font-weight:bold;'" : "";
+                html += `<tr ${glowStyle}><td>${r.name}</td><td>Rd ${r.round}</td><td>Lvl ${r.gunLvl}</td></tr>`;
+            });
+            html += "</table>";
+            container.innerHTML = html;
+        }
+
+        function toggleLeaderboardModal(open) {
+            if(open) loadLeaderboardData();
+            document.getElementById("leaderboard-modal").style.display = open ? "flex" : "none";
         }
 
         function buyUpgrade() {
             if (cash >= cost && lvl < 100) {
                 cash -= cost; lvl++; cost = Math.floor(cost * 1.25);
-                if (player.perk === 'speed') player.speed += 0.3;
-                else player.speed += 0.2;
+                if (player.perk === 'speed') player.speed += 0.25;
+                else player.speed += 0.15;
                 checkWeaponTier();
                 updateUI();
             }
+        }
+
+        function triggerMilestoneBoss() {
+            bossActive = true;
+            zombies = [];
+            let tier = currentRound / 10;
+            bosses.push({ 
+                x: 400, y: -50, 
+                hp: 100 + (tier * 150), maxHp: 100 + (tier * 150), 
+                size: 35 + (tier * 4), speed: 0.5 + (tier * 0.08),
+                tier: tier
+            });
         }
 
         function checkWeaponTier() {
@@ -250,12 +275,12 @@
         }
 
         window.addEventListener("keydown", e => { 
-            if(e.key === "Escape") { togglePauseGame(); return; }
             if(!isGameRunning || isPaused) return;
             keys[e.key.toLowerCase()] = true; 
             if(e.key.toLowerCase() === 'r' && !isReloading && currentAmmo < maxAmmo) startManualReload();
         });
         window.addEventListener("keyup", e => { if(isGameRunning) keys[e.key.toLowerCase()] = false; });
+        
         window.addEventListener("mousemove", e => {
             const rect = canvas.getBoundingClientRect();
             mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
@@ -265,10 +290,10 @@
 
         function startManualReload() {
             isReloading = true;
-            if(currentWeapon === "Tactical Mini-Gun") reloadTimer = 150;
-            else if(currentWeapon === "Laser Railgun") reloadTimer = 120;
-            else if(currentWeapon === "Remington Shotgun") reloadTimer = 90;
-            else reloadTimer = 50;
+            if(currentWeapon === "Tactical Mini-Gun") reloadTimer = 140;
+            else if(currentWeapon === "Laser Railgun") reloadTimer = 110;
+            else if(currentWeapon === "Remington Shotgun") reloadTimer = 85;
+            else reloadTimer = 45;
             playSound('reload');
             document.getElementById("ui-reloading").style.display = "inline";
         }
@@ -280,167 +305,157 @@
             currentAmmo--;
             playSound('shoot');
             const baseAngle = Math.atan2(mouseY - player.y, mouseX - player.x);
-            let bDamage = 1 + Math.floor(lvl / 8);
+            let bDamage = 1 + Math.floor(lvl / 7);
 
             if (currentWeapon === "M1911 Pistol") {
                 bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*8, vy: Math.sin(baseAngle)*8, dmg: bDamage, color: "#ffff00", life: 1, size: 7 });
                 weaponCooldown = 15;
-            } else if (currentWeapon === "Remington Shotgun") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle-0.2)*8, vy: Math.sin(baseAngle-0.2)*8, dmg: bDamage, color: "#ff3300", life: 1, size: 6 });
+            } 
+            else if (currentWeapon === "Remington Shotgun") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle-0.18)*8, vy: Math.sin(baseAngle-0.18)*8, dmg: bDamage, color: "#ff3300", life: 1, size: 6 });
                 bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*8, vy: Math.sin(baseAngle)*8, dmg: bDamage, color: "#ff3300", life: 1, size: 6 });
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle+0.2)*8, vy: Math.sin(baseAngle+0.2)*8, dmg: bDamage, color: "#ff3300", life: 1, size: 6 });
-                weaponCooldown = 35;
-            } else if (currentWeapon === "Plasma Rifle") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*10, vy: Math.sin(baseAngle)*10, dmg: bDamage * 1.5, color: "#00ffff", life: 1, size: 10 });
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle+0.18)*8, vy: Math.sin(baseAngle+0.18)*8, dmg: bDamage, color: "#ff3300", life: 1, size: 6 });
+                weaponCooldown = 32;
+            } 
+            else if (currentWeapon === "Plasma Rifle") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*10, vy: Math.sin(baseAngle)*10, dmg: bDamage * 1.4, color: "#00ffff", life: 1, size: 10 });
                 weaponCooldown = 8;
-            } else if (currentWeapon === "Laser Railgun") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*12, vy: Math.sin(baseAngle)*12, dmg: bDamage * 2, color: "#00ff00", life: 4, size: 5 });
-                weaponCooldown = 50;
-            } else if (currentWeapon === "Tactical Mini-Gun") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle-0.05)*11, vy: Math.sin(baseAngle-0.05)*11, dmg: bDamage, color: "magenta", life: 1, size: 6 });
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle+0.05)*11, vy: Math.sin(baseAngle+0.05)*11, dmg: bDamage, color: "orange", life: 1, size: 6 });
+            } 
+            else if (currentWeapon === "Laser Railgun") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*13, vy: Math.sin(baseAngle)*13, dmg: bDamage * 2.2, color: "#00ff00", life: 5, size: 5 });
+                weaponCooldown = 45;
+            } 
+            else if (currentWeapon === "Tactical Mini-Gun") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle-0.04)*11, vy: Math.sin(baseAngle-0.04)*11, dmg: bDamage, color: "magenta", life: 1, size: 6 });
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle+0.04)*11, vy: Math.sin(baseAngle+0.04)*11, dmg: bDamage, color: "orange", life: 1, size: 6 });
                 weaponCooldown = 4;
             }
             updateUI();
         }
 
-        function checkRoundProgression() {
-            if (zombiesKilledThisRound >= totalZombiesToKill && zombies.length === 0 && bosses.length === 0) {
-                currentRound++;
-                zombiesKilledThisRound = 0;
-                currentRoundZombiesSpawned = 0;
-                totalZombiesToKill = 10 + (currentRound * 4);
-                
-                // Unlock Mutation mechanics permanently based on round thresholds
-                if (currentRound === 10) tier1Defeated = true;
-                if (currentRound === 20) tier2Defeated = true;
-                if (currentRound === 30) tier3Defeated = true;
-                if (currentRound === 40) tier4Defeated = true;
-
-                if (currentRound % 10 === 0) {
-                    bossActive = true;
-                    let m = currentRound / 10;
-                    bosses.push({ x: 400, y: -50, hp: 60 + (m * 50), maxHp: 60 + (m * 50), size: 36 + m, speed: 0.6 + (m * 0.08) });
-                }
-                updateUI();
-            }
-        }
-
         function spawnZombie() {
-            if(!isGameRunning || isPaused) return;
+            if(!isGameRunning || isPaused) { zombieInterval = setTimeout(spawnZombie, 500); return; }
             
-            if(!bossActive && currentRoundZombiesSpawned < totalZombiesToKill) {
+            if(!bossActive && (zombies.length + enemiesDefeatedInRound < roundSpawnTotal)) {
                 let side = Math.floor(Math.random() * 4);
                 let rand = Math.random();
-                let z = { x: 0, y: 0, hp: 1 + Math.floor(currentRound/4), maxHp: 1 + Math.floor(currentRound/4), speed: 1.5, color: "#39e639", type: "normal", shootCooldown: 0 };
+                let z = { x: 0, y: 0, hp: 1 + Math.floor(currentRound/4), maxHp: 1 + Math.floor(currentRound/4), speed: 1.4 + (currentRound*0.01), color: "#39e639", type: "normal", shootCooldown: 0 };
                 
                 if(side === 0) { z.x = Math.random()*800; z.y = -30; }
                 else if(side === 1) { z.x = 830; z.y = Math.random()*550; }
                 else if(side === 2) { z.x = Math.random()*800; z.y = 580; }
                 else { z.x = -30; z.y = Math.random()*550; }
 
-                if (tier4Defeated && rand < 0.12) { z.color = "#9900ff"; z.type = "purple_gunner"; z.speed = 1.3; }
-                else if (tier3Defeated && rand < 0.36) { z.color = "#ff6600"; z.type = "orange_brute"; z.hp *= 2.4; z.maxHp *= 2.4; z.speed = 1.0; }
-                else if (tier2Defeated && rand < 0.45) { z.color = "#0055ff"; z.type = "blue_sprinter"; z.speed *= 1.45; }
-                else if (tier1Defeated && rand < 0.80) { z.color = "#ff0000"; z.type = "red_stalker"; z.hp *= 1.25; z.maxHp *= 1.25; }
-                
+                if (currentRound >= 40 && rand < 0.12) {
+                    z.color = "#9900ff"; z.type = "purple_gunner"; z.speed *= 0.9;
+                } else if (currentRound >= 30 && rand < 0.36) {
+                    z.color = "#ff6600"; z.type = "orange_brute"; z.hp *= 2.4; z.maxHp *= 2.4; z.speed *= 0.7;
+                } else if (currentRound >= 20 && rand < 0.45) {
+                    z.color = "#0055ff"; z.type = "blue_sprinter"; z.speed *= 1.45;
+                } else if (currentRound >= 10 && rand < 0.80) {
+                    z.color = "#ff0000"; z.type = "red_stalker"; z.hp *= 1.25; z.maxHp *= 1.25;
+                }
                 zombies.push(z);
-                currentRoundZombiesSpawned++;
             }
-            zombieInterval = setTimeout(spawnZombie, Math.max(100, 1500 - (currentRound * 20)));
+            zombieInterval = setTimeout(spawnZombie, Math.max(100, 1200 - (currentRound * 10)));
         }
 
         function gameLoop() {
-            if(!isGameRunning || isPaused) return;
-            ctx.clearRect(0, 0, 800, 550);
+            if(!isGameRunning) return;
+            
+            if (!isPaused) {
+                if(weaponCooldown > 0) weaponCooldown--;
 
-            if(weaponCooldown > 0) weaponCooldown--;
-            if (isReloading) {
-                reloadTimer--;
-                if (reloadTimer <= 0) {
-                    currentAmmo = maxAmmo; isReloading = false;
-                    document.getElementById("ui-reloading").style.display = "none";
-                    updateUI();
+                if (isReloading) {
+                    reloadTimer--;
+                    if (reloadTimer <= 0) {
+                        currentAmmo = maxAmmo; isReloading = false;
+                        document.getElementById("ui-reloading").style.display = "none";
+                        updateUI();
+                    }
                 }
-            }
 
-            if (keys['w'] && player.y > player.size) player.y -= player.speed;
-            if (keys['s'] && player.y < 550 - player.size) player.y += player.speed;
-            if (keys['a'] && player.x > player.size) player.x -= player.speed;
-            if (keys['d'] && player.x < 800 - player.size) player.x += player.speed;
+                if (keys['w'] && player.y > player.size) player.y -= player.speed;
+                if (keys['s'] && player.y < 550 - player.size) player.y += player.speed;
+                if (keys['a'] && player.x > player.size) player.x -= player.speed;
+                if (keys['d'] && player.x < 800 - player.size) player.x += player.speed;
 
-            player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+                player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
 
-            // Ground Arena Grid
-            ctx.strokeStyle = "#223322"; ctx.lineWidth = 1;
-            for(let i=0; i<800; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,550); ctx.stroke(); }
-            for(let j=0; j<550; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(800,j); ctx.stroke(); }
+                // Projectile Calculations Loop
+                bullets.forEach((b, bIdx) => {
+                    b.x += b.vx; b.y += b.vy;
+                    if (b.x < 0 || b.x > 800 || b.y < 0 || b.y > 550) bullets.splice(bIdx, 1);
 
-            // PLAYER MODEL RENDER
-            ctx.save();
-            ctx.fillStyle = "red"; ctx.fillRect(player.x - 20, player.y - 32, 40, 5);
-            ctx.fillStyle = "#00ff00"; ctx.fillRect(player.x - 20, player.y - 32, (hp / 100) * 40, 5);
-            ctx.translate(player.x, player.y); ctx.rotate(player.angle);
-            ctx.fillStyle = "#555"; ctx.fillRect(5, -5, 25, 6);
-            ctx.fillStyle = player.color;
-            ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, 0, player.size*0.6, 0, Math.PI*2); ctx.fill();
-            ctx.restore();
+                    zombies.forEach((z, zIdx) => {
+                        if (Math.hypot(b.x - z.x, b.y - z.y) < 22) {
+                            let dealt = b.dmg;
+                            if (player.perk === 'lucky' && Math.random() < 0.12) dealt = 999;
+                            z.hp -= dealt; b.life--; playSound('hit');
+                            if (z.hp <= 0) {
+                                zombies.splice(zIdx, 1);
+                                enemiesDefeatedInRound++;
+                                cash += player.perk === 'looter' ? 30 : 15;
+                                updateUI();
+                                checkRoundProgression();
+                            }
+                            if (b.life <= 0) bullets.splice(bIdx, 1);
+                        }
+                    });
 
-            // RENDER PLAYER BULLETS
-            bullets.forEach((b, bIdx) => {
-                b.x += b.vx; b.y += b.vy;
-                ctx.fillStyle = b.color;
-                ctx.fillRect(b.x - Math.floor(b.size/2), b.y - Math.floor(b.size/2), b.size, b.size);
-                if (b.x < 0 || b.x > 800 || b.y < 0 || b.y > 550) bullets.splice(bIdx, 1);
+                    bosses.forEach((boss, bossIdx) => {
+                        if (Math.hypot(b.x - boss.x, b.y - boss.y) < boss.size) {
+                            boss.hp -= b.dmg; b.life--; playSound('hit');
+                            if (boss.hp <= 0) {
+                                if(boss.tier === 1) tier1Defeated = true;
+                                if(boss.tier === 2) tier2Defeated = true;
+                                if(boss.tier === 3) tier3Defeated = true;
+                                if(boss.tier === 4) tier4Defeated = true;
+                                bosses.splice(bossIdx, 1);
+                                cash += player.perk === 'looter' ? 300 : 150;
+                                bossActive = false;
+                                updateUI();
+                                checkRoundProgression();
+                            }
+                            if (b.life <= 0) bullets.splice(bIdx, 1);
+                        }
+                    });
+                });
 
+                // Enemy Bullet Physics
+                enemyBullets.forEach((eb, ebIdx) => {
+                    eb.x += eb.vx; eb.y += eb.vy;
+                    if (eb.x < 0 || eb.x > 800 || eb.y < 0 || eb.y > 550) enemyBullets.splice(ebIdx, 1);
+
+                    if (Math.hypot(eb.x - player.x, eb.y - player.y) < player.size) {
+                        hp -= player.perk === 'tank' ? 2 : 4;
+                        enemyBullets.splice(ebIdx, 1);
+                        updateUI();
+                        if(hp <= 0) handlePlayerDeath();
+                    }
+                });
+
+                // Zombie Movement AI
                 zombies.forEach((z, zIdx) => {
-                    if (Math.hypot(b.x - z.x, b.y - z.y) < 22) {
-                        let dealt = b.dmg;
-                        if (player.perk === 'lucky' && Math.random() < 0.12) dealt = 999;
-                        z.hp -= dealt; b.life--; playSound('hit');
-                        if (z.hp <= 0) {
-                            zombies.splice(zIdx, 1);
-                            zombiesKilledThisRound++;
-                            cash += player.perk === 'looter' ? 30 : 15;
-                            checkRoundProgression();
-                            updateUI();
+                    let zAngle = Math.atan2(player.y - z.y, player.x - z.x);
+                    z.x += Math.cos(zAngle) * z.speed; z.y += Math.sin(zAngle) * z.speed;
+
+                    if (z.type === "purple_gunner") {
+                        z.shootCooldown++;
+                        if (z.shootCooldown > 110) {
+                            enemyBullets.push({ x: z.x, y: z.y, vx: Math.cos(zAngle) * 5.5, vy: Math.sin(zAngle) * 5.5 });
+                            z.shootCooldown = 0;
                         }
-                        if (b.life <= 0) bullets.splice(bIdx, 1);
+                    }
+
+                    if (Math.hypot(player.x - z.x, player.y - z.y) < player.size + 10) {
+                        hp -= player.perk === 'tank' ? 0.2 : 0.4;
+                        updateUI();
+                        if(hp <= 0) handlePlayerDeath();
                     }
                 });
 
-                bosses.forEach((boss, bossIdx) => {
-                    if (Math.hypot(b.x - boss.x, b.y - boss.y) < boss.size) {
-                        boss.hp -= b.dmg; b.life--; playSound('hit');
-                        if (boss.hp <= 0) {
-                            bosses.splice(bossIdx, 1);
-                            bossActive = false;
-                            cash += player.perk === 'looter' ? 300 : 150;
-                            checkRoundProgression();
-                            updateUI();
-                        }
-                        if (b.life <= 0) bullets.splice(bIdx, 1);
-                    }
-                });
-            });
-
-            // ENEMY PROJECTILES
-            ctx.fillStyle = "#ff00ff";
-            enemyBullets.forEach((eb, ebIdx) => {
-                eb.x += eb.vx; eb.y += eb.vy;
-                ctx.fillRect(eb.x - 3, eb.y - 3, 6, 6);
-                if (eb.x < 0 || eb.x > 800 || eb.y < 0 || eb.y > 550) enemyBullets.splice(ebIdx, 1);
-
-                if (Math.hypot(eb.x - player.x, eb.y - player.y) < player.size) {
-                    hp -= player.perk === 'tank' ? 2 : 4;
-                    enemyBullets.splice(ebIdx, 1);
-                    updateUI();
-                    if(hp <= 0) { isGameRunning = false; alert("SQUAD OUT-GUNNED! Game Over."); returnToMenu(); }
-                }
-            });
-
-            // ZOMBIES TRACKING
-            zombies.forEach((z, zIdx) => {
-                let zAngle = Math.atan2(player.y - z.y, player.x - z.x);
-                z.x += Math.cos(zAngle) * z.speed; z.y += Math.sin(zAngle) * z
+                // Boss Tracking System
+                bosses.forEach(boss => {
+                    let bAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
+                    boss.x += Math.cos(bAngle) * boss.speed; boss.y += Math.sin(bAngle)
