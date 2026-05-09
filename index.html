@@ -134,9 +134,10 @@
         let enemiesSpawning = 0, waveInProgess = false;
         let currentMouseX = 0, currentMouseY = 0;
 
+        // FIXED PATH DIRECTION MATH: Reoriented to run Left-to-Right correctly
         const path = [
-            {x: 0, y: 150}, {x: 250, y: 150}, {x: 250, y: 410}, 
-            {x: 550, y: 410}, {x: 550, y: 250}, {x: 750, y: 250}
+            {x: 10, y: 150}, {x: 230, y: 150}, {x: 230, y: 410}, 
+            {x: 530, y: 410}, {x: 530, y: 250}, {x: 690, y: 250}
         ];
 
         function initGameEngine() {
@@ -148,15 +149,6 @@
             canvas.addEventListener("mousedown", placeDefenderUnit);
             setInterval(gameTick, 1000 / 30);
             startThemeMusic();
-            
-            setInterval(() => {
-                if (!waveInProgess) return;
-                let arafatCount = towers.filter(t => t.type === 'arafat').length;
-                if (arafatCount > 0 && baseHp < maxBaseHp) {
-                    baseHp = Math.min(maxBaseHp, baseHp + (3 * arafatCount));
-                    updateUI();
-                }
-            }, 5000);
         }
 
         function startWaveCombat() {
@@ -197,25 +189,24 @@
         }
 
         function isOnRoad(px, py) {
-            if (py >= 115 && py <= 185 && px <= 285) return true;
-            if (px >= 215 && px <= 285 && py >= 115 && py <= 445) return true;
-            if (py >= 375 && py <= 445 && px >= 215 && px <= 585) return true;
-            if (px >= 515 && px <= 585 && py >= 215 && py <= 445) return true;
-            if (py >= 215 && py <= 285 && px >= 515) return true;
+            if (py >= 115 && py <= 185 && px <= 265) return true;
+            if (px >= 195 && px <= 265 && py >= 115 && py <= 445) return true;
+            if (py >= 375 && py <= 445 && px >= 195 && px <= 565) return true;
+            if (px >= 495 && px <= 565 && py >= 215 && py <= 445) return true;
+            if (py >= 215 && py <= 285 && px >= 495 && px <= 720) return true;
             return false;
         }
 
         function spawnZombieWave() {
             if (!waveInProgess) return;
             
-            // Check for Milestone Boss waves
             if ((waveNum === 5 || waveNum === 10) && enemiesSpawning === (6 + (waveNum * 4))) {
                 enemies.push({ 
-                    x: path.x, y: path.y, pathIndex: 0, 
+                    x: path[0].x, y: path[0].y, pathIndex: 0, 
                     hp: 150 * (waveNum / 5), maxHp: 150 * (waveNum / 5), 
                     speed: 0.6, size: 28, color: "#9900ff", type: "boss" 
                 });
-                enemiesSpawning = 0; // Boss solos the wave
+                enemiesSpawning = 0;
                 return;
             }
 
@@ -224,7 +215,7 @@
                 let speed = 1.2 + (waveNum * 0.04);
                 let isSpiderAlien = Math.random() < 0.25;
                 enemies.push({ 
-                    x: path.x, y: path.y, pathIndex: 0, 
+                    x: path[0].x, y: path[0].y, pathIndex: 0, 
                     hp: isSpiderAlien ? eHp * 0.7 : eHp, maxHp: isSpiderAlien ? eHp * 0.7 : eHp, 
                     speed: isSpiderAlien ? speed * 1.6 : speed, size: isSpiderAlien ? 10 : 13,
                     color: isSpiderAlien ? "#ff00ff" : "#00ff00", type: isSpiderAlien ? "spider" : "normal"
@@ -260,7 +251,6 @@
                 d.y = d.parent.y + Math.sin(d.angle) * 25;
             });
 
-            // PROCESS TEAM COMBO SYSTEM SQUAD SYNERGY LINKS
             let daiyons = towers.filter(t => t.type === "daiyon");
             let aadams = towers.filter(t => t.type === "aadam");
             daiyons.forEach(d => {
@@ -269,12 +259,9 @@
                         playAudioSound('combo');
                         activeCombos.push({ sx: d.x, sy: d.y, tx: a.x, ty: a.y, life: 8 });
                         enemies.forEach(e => {
-                            // Hit enemies walking between the link points
                             let midX = (d.x + a.x) / 2;
                             let midY = (d.y + a.y) / 2;
-                            if (Math.hypot(e.x - midX, e.y - midY) < 80) {
-                                e.hp -= 3;
-                            }
+                            if (Math.hypot(e.x - midX, e.y - midY) < 80) { e.hp -= 3; }
                         });
                     }
                 });
@@ -346,22 +333,23 @@
                 waveInProgess = false; waveNum++; document.getElementById("play-btn").disabled = false; updateUI();
             }
 
-            // RENDERING LOOPS
+            // RENDERING LAYOUT ENGINE
             ctx.clearRect(0, 0, 800, 550);
 
-            // Path Road
+            // Path Road Terrain
             ctx.strokeStyle = "#333"; ctx.lineWidth = 44; ctx.lineCap = "round"; ctx.lineJoin = "round";
-            ctx.beginPath(); ctx.moveTo(path.x, path.y);
+            ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
             for(let i=1; i<path.length; i++) ctx.lineTo(path[i].x, path[i].y); ctx.stroke();
 
-            // Spawn gateway
-            ctx.fillStyle = "#ff3300"; ctx.fillRect(0, 125, 20, 50);
+            // RED PORTAL OUTBREAK GATEWAY MARKER
+            ctx.fillStyle = "#ff3300"; ctx.fillRect(0, 125, 25, 50);
+            ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 3; ctx.strokeRect(0, 125, 25, 50);
 
-            // Skittle Car Base
-            ctx.fillStyle = "#ff00ff"; ctx.fillRect(750, 225, 45, 25);
-            ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(760, 252, 6, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(785, 252, 6, 0, Math.PI*2); ctx.fill();
+            // Skittle Car Base Frame Target Position
+            ctx.fillStyle = "#ff00ff"; ctx.fillRect(690, 225, 55, 30);
+            ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(705, 258, 6, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(730, 258, 6, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#fff"; ctx.font = "bold 9px Arial"; ctx.fillText("SKITTLES", 694, 244);
 
-            // Render Combo Electric lines
             activeCombos.forEach(c => {
                 ctx.strokeStyle = "rgba(0, 255, 255, " + (c.life / 8) + ")"; ctx.lineWidth = 4;
                 ctx.beginPath(); ctx.moveTo(c.sx, c.sy); ctx.lineTo(c.tx, c.ty); ctx.stroke();
@@ -386,7 +374,19 @@
             if (selectedType) { ctx.strokeStyle = "rgba(255, 0, 255, 0.25)"; ctx.lineWidth = 2; ctx.beginPath(); let r = selectedType === "shuceeb" ? 150 : 110; ctx.arc(currentMouseX, currentMouseY, r, 0, Math.PI*2); ctx.stroke(); }
 
             enemies.forEach(e => {
-                ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
+                if (e.type === "spider") {
+                    ctx.fillStyle = "#ff00ff";
+                    ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(e.x-12, e.y-4); ctx.lineTo(e.x+12, e.y+4); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(e.x-12, e.y+4); ctx.lineTo(e.x+12, e.y-4); ctx.stroke();
+                } else {
+                    ctx.fillStyle = e.color;
+                    ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#000000";
+                    ctx.fillRect(e.x-4, e.y-4, 3, 3); ctx.fillRect(e.x+2, e.y-4, 3, 3);
+                }
+                
                 ctx.fillStyle = "red"; ctx.fillRect(e.x - 12, e.y - 18, 24, 3.5);
                 ctx.fillStyle = "green"; ctx.fillRect(e.x - 12, e.y - 18, (e.hp / e.maxHp) * 24, 3.5);
             });
