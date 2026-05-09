@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Zombie.io | Survival Squad</title>
+    <title>Zombie.io | Survival Squad: Subtitle Edition</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         #game-wrapper { perspective: 800px; perspective-origin: 50% 30%; width: 100vw; height: 85vh; display: none; }
@@ -14,7 +14,7 @@
         .btn-upgrade:disabled { background: #444; color: #777; cursor: not-allowed; }
         .btn-menu { background: #00ff00; color: black; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         .btn-menu:hover { background: #00cc00; }
-        #cutscene-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff0000; min-height: 150px; text-align: left; width: 100%; }
+        #cutscene-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff0000; min-height: 150px; }
         .next-btn { background: #fff; color: #000; border: none; padding: 10px 25px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; }
         .hp-bar-container { width: 120px; background: #330000; border: 2px solid #ff0000; height: 16px; border-radius: 4px; display: inline-block; vertical-align: middle; }
         #ui-hp-fill { width: 100%; background: #00ff00; height: 100%; transition: width 0.1s; }
@@ -22,11 +22,11 @@
 </head>
 <body>
 
-    <!-- ANIMATED CUTSCENE SCREEN -->
+    <!-- CUTSCENE SCREEN -->
     <div id="cutscene-screen" class="screen">
-        <h2 id="cutscene-title" style="color: #ff3300; font-size: 32px; letter-spacing: 2px;">🪟 THE HOMEFRONT</h2>
-        <div id="cutscene-text"></div>
-        <button id="cutscene-btn" class="next-btn" onclick="nextCutscene()">TYPING...</button>
+        <h2 style="color: #ff3300; font-size: 32px;">⚠️ EMERGENCY BROADCAST ⚠️</h2>
+        <div id="cutscene-text">Loading transmission...</div>
+        <button id="cutscene-btn" class="next-btn" onclick="nextCutscene()">NEXT</button>
     </div>
 
     <!-- CHARACTER SELECTION -->
@@ -83,76 +83,42 @@
                 gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            } else if (type === 'type') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.03);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.03);
             }
         }
 
-        function startMusic() {
-            setInterval(() => {
-                if (!isGameRunning) return;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.type = 'sine';
-                const notes = [130.81, 146.83, 164.81, 196.00];
-                osc.frequency.setValueAtTime(notes[Math.floor(Math.random() * notes.length)], audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-            }, 400);
-        }
-
-        // Animate Cutscene Configuration
-        const cutsceneData = [
-            { title: "🪟 THE HOMEFRONT", text: "Shuceeb, Aadam, Yakoub, Daiyon, Arafat, and Naythan were chilled out at their house playing games together..." },
-            { title: "📺 EMERGENCY ALARM", text: "Suddenly, the power cuts out completely. The TV screen flashes green static, replacing your game with an urgent news alert." },
-            { title: "🎙️ WHITE HOUSE BROADCAST", text: "Mr. Trump flashes onto the screen, sweating heavily: 'My fellow Americans... something has gone horribly wrong inside our classified research facilities...'" },
-            { title: "🧪 THE ALIEN EGG ACCIDENT", text: "'...A high-ranking lead scientist accidentally dropped and cracked open a classified extra-terrestrial Alien Egg. Mutant spores are turning the entire neighborhood into monsters!'" },
-            { title: "🪚 LOCK THE DOORS", text: "Blood-curdling screeches echo directly outside your living room window. The crew is terrified. Grab your starter weapons and prepare to defend the perimeter!" }
+        const cutsceneLines = [
+            "[SCENE 1: THE HOMEFRONT]\n\nShuceeb, Aadam, Yakoub, Daiyon, Arafat, and Naythan were chilled out at their house playing video games together...",
+            "[SCENE 2: INTERRUPTION]\n\nSuddenly, the power cuts out! The TV flashes deep white static, forcing an emergency news transmission onto the screen.",
+            "[SCENE 3: TRUMP BROADCAST]\n\nMr. Trump appears on camera, visibly sweating: 'My fellow Americans... a rogue scientist inside our classified labs accidentally cracked open a secret Alien Egg asset...'",
+            "[SCENE 4: MOBILIZATION]\n\nThe viral spore is turning citizens into mutants! Blood-curdling screeches fill the street outside. Grab your tactical firearms!'"
         ];
         
-        let cutsceneIdx = 0, charIdx = 0, typingTimeout;
-        const textElement = document.getElementById("cutscene-text");
-        const titleElement = document.getElementById("cutscene-title");
-        const btnElement = document.getElementById("cutscene-btn");
+        let cutsceneIdx = 0;
 
-        function typeSentence() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            let currentText = cutsceneData[cutsceneIdx].text;
-            
-            if (charIdx < currentText.length) {
-                textElement.innerHTML += currentText.charAt(charIdx);
-                if (currentText.charAt(charIdx) !== " ") playSound('type');
-                charIdx++;
-                btnElement.innerText = "TYPING...";
-                btnElement.disabled = true;
-                typingTimeout = setTimeout(typeSentence, 45); // Typing speed pace (45ms per char)
+        // Displays lines instantly as high-visibility subtitles
+        function showCaption() {
+            document.getElementById("cutscene-text").innerText = cutsceneLines[cutsceneIdx];
+            if (cutsceneIdx === cutsceneLines.length - 1) {
+                document.getElementById("cutscene-btn").innerText = "START SURVIVAL SQUAD";
             } else {
-                btnElement.innerText = cutsceneIdx === cutsceneData.length - 1 ? "LAUNCH GAME.IO" : "NEXT TRANSMISSION";
-                btnElement.disabled = false;
+                document.getElementById("cutscene-btn").innerText = "NEXT CAPTION";
             }
         }
 
         function nextCutscene() {
-            clearTimeout(typingTimeout);
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             cutsceneIdx++;
-            if (cutsceneIdx < cutsceneData.length) {
-                charIdx = 0;
-                textElement.innerHTML = "";
-                titleElement.innerText = cutsceneData[cutsceneIdx].title;
-                typeSentence();
+            if (cutsceneIdx < cutsceneLines.length) {
+                showCaption();
             } else {
                 document.getElementById("cutscene-screen").style.display = "none";
                 document.getElementById("menu-screen").style.display = "flex";
             }
         }
         
-        // Kick off your animated typewriter sequence right away
-        window.addEventListener("DOMContentLoaded", () => { typeSentence(); });
+        window.onload = function() {
+            showCaption();
+        };
 
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
@@ -232,13 +198,16 @@
             else if (lvl >= 20) { currentWeapon = "Plasma Rifle"; maxAmmo = 30; }
             else if (lvl >= 10) { currentWeapon = "Remington Shotgun"; maxAmmo = 5; }
             else { currentWeapon = "M1911 Pistol"; maxAmmo = 7; }
+            
             document.getElementById("ui-weapon").innerText = currentWeapon;
         }
 
         window.addEventListener("keydown", e => { 
             if(!isGameRunning) return;
             keys[e.key.toLowerCase()] = true; 
-            if(e.key.toLowerCase() === 'r' && !isReloading && currentAmmo < maxAmmo) startManualReload();
+            if(e.key.toLowerCase() === 'r' && !isReloading && currentAmmo < maxAmmo) {
+                startManualReload();
+            }
         });
         window.addEventListener("keyup", e => { if(isGameRunning) keys[e.key.toLowerCase()] = false; });
         window.addEventListener("mousemove", e => {
@@ -347,7 +316,7 @@
             for(let i=0; i<800; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,550); ctx.stroke(); }
             for(let j=0; j<550; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(800,j); ctx.stroke(); }
 
-            // PLAYER MODEL
+            // PLAYER MODEL RENDER
             ctx.save();
             ctx.fillStyle = "red"; ctx.fillRect(player.x - 20, player.y - 32, 40, 5);
             ctx.fillStyle = "#00ff00"; ctx.fillRect(player.x - 20, player.y - 32, (hp / 100) * 40, 5);
@@ -358,7 +327,7 @@
             ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, 0, player.size*0.6, 0, Math.PI*2); ctx.fill();
             ctx.restore();
 
-            // PROJECTILES MECHANICS
+            // RENDER ACTIVE PLAYER BULLETS
             bullets.forEach((b, bIdx) => {
                 b.x += b.vx; b.y += b.vy;
                 ctx.fillStyle = b.color;
@@ -397,7 +366,7 @@
                 });
             });
 
-            // ENEMY PROJECTILES
+            // ENEMY BULLETS
             ctx.fillStyle = "#ff00ff";
             enemyBullets.forEach((eb, ebIdx) => {
                 eb.x += eb.vx; eb.y += eb.vy;
@@ -412,7 +381,7 @@
                 }
             });
 
-            // ZOMBIES AI LOOP
+            // ZOMBIES AI TRACKING
             zombies.forEach((z, zIdx) => {
                 let zAngle = Math.atan2(player.y - z.y, player.x - z.x);
                 z.x += Math.cos(zAngle) * z.speed; z.y += Math.sin(zAngle) * z.speed;
@@ -440,7 +409,7 @@
                 }
             });
 
-            // BOSS MANAGEMENT LOOP
+            // BOSS LOOP
             bosses.forEach(boss => {
                 let bAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
                 boss.x += Math.cos(bAngle) * boss.speed; boss.y += Math.sin(bAngle) * boss.speed;
@@ -460,4 +429,17 @@
                 }
             });
 
-            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateUI() {
+            document.getElementById("ui-cash").innerText = cash;
+            document.getElementById("ui-lvl").innerText = lvl;
+            document.getElementById("ui-ammo").innerText = `${currentAmmo}/${maxAmmo}`;
+            document.getElementById("ui-hp-fill").style.width = Math.max(0, hp) + "%";
+            document.getElementById("up-btn").innerText = `UPGRADE GUN ($${cost})`;
+            document.getElementById("up-btn").disabled = cash < cost || lvl >= 100;
+        }
+    </script>
+</body>
+</html>
