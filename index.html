@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zombie.io | Survival Squad: Animated Intro</title>
+    <style>
+        body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
+        #game-wrapper { perspective: 800px; perspective-origin: 50% 30%; width: 100vw; height: 85vh; display: none; }
+        canvas { background: #111411; border: 4px solid #ff3300; cursor: crosshair; margin: 10px auto; box-shadow: 0 20px 40px rgba(255, 51, 0, 0.5); transform: rotateX(45deg); transform-style: preserve-3d; }
+        #cutsceneCanvas { display: block; background: #080808; border: 4px solid #555; margin: 20px auto; box-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        .screen { padding: 20px; max-width: 850px; margin: auto; height: 95vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .char-btn { padding: 15px; margin: 8px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 16px; width: 240px; text-transform: uppercase; font-weight: bold; }
+        .char-btn:hover { background: #00ff00; color: black; box-shadow: 0 0 15px #00ff00; }
+        #ui-box { background: rgba(0,0,0,0.9); padding: 12px; border-bottom: 3px solid #ff3300; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; }
+        .btn-upgrade { background: #ff3300; color: white; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .btn-upgrade:disabled { background: #444; color: #777; cursor: not-allowed; }
+        .btn-menu { background: #00ff00; color: black; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .btn-menu:hover { background: #00cc00; }
+        #subtitles { color: #fff; font-size: 18px; margin-top: 10px; max-width: 750px; line-height: 1.4; text-shadow: 2px 2px #000; min-height: 50px; }
+        .next-btn { background: #ff3300; color: #fff; border: none; padding: 10px 30px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 15px; border-radius: 4px; box-shadow: 0 0 10px #ff3300; }
+        .hp-bar-container { width: 120px; background: #330000; border: 2px solid #ff0000; height: 16px; border-radius: 4px; display: inline-block; vertical-align: middle; }
+        #ui-hp-fill { width: 100%; background: #00ff00; height: 100%; transition: width 0.1s; }
+    </style>
+</head>
+<body>
+
+    <!-- ANIMATED CUTSCENE SCREEN -->
+    <div id="cutscene-screen" class="screen">
+        <h2 style="color: #ff3300; font-size: 28px; margin: 5px;">⚠️ SITUATION ROOM TRANSMISSION ⚠️</h2>
+        <canvas id="cutsceneCanvas" width="750" height="400"></canvas>
+        <div id="subtitles">Click NEXT to boot up the broadcast system...</div>
+        <button id="cutscene-btn" class="next-btn" onclick="nextCutsceneStep()">NEXT</button>
+    </div>
+
+    <!-- CHARACTER SELECTION -->
+    <div id="menu-screen" class="screen" style="display:none;">
+        <h1>THE OUTBREAK HAS BEGUN</h1>
+        <h3>SELECT YOUR SURVIVOR & PERK:</h3>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 600px;">
+            <button class="char-btn" onclick="startGame('Shuceeb', '#00ffff', 'speed')">Shuceeb (Super Speed)</button>
+            <button class="char-btn" onclick="startGame('Aadam', '#ff0055', 'tank')">Aadam (Heavy Armor)</button>
+            <button class="char-btn" onclick="startGame('Yakoub', '#ffcc00', 'looter')">Yakoub (Double Cash)</button>
+            <button class="char-btn" onclick="startGame('Daiyon', '#9900ff', 'tactical')">Daiyon (Gun Lvl 5 Start)</button>
+            <button class="char-btn" onclick="startGame('Arafat', '#00ff66', 'medic')">Arafat (Auto Heal)</button>
+            <button class="char-btn" onclick="startGame('Naythan', '#ff6600', 'lucky')">Naythan (Insta-Kill Chance)</button>
+        </div>
+    </div>
+
+    <!-- GAME UI & ARENA -->
+    <div id="ui-box">
+        <button class="btn-menu" onclick="returnToMenu()">MAIN MENU</button>
+        <div>Survivor: <span id="ui-name" style="color:yellow;">---</span></div>
+        <div>HP: <div class="hp-bar-container"><div id="ui-hp-fill"></div></div></div>
+        <div>Weapon: <span id="ui-weapon" style="color: #ffcc00;">M1911 Pistol</span></div>
+        <div>Ammo: <span id="ui-ammo" style="color: #ff00ff;">7/7</span> <span id="ui-reloading" style="color: red; display: none;">[RELOADING]</span></div>
+        <div>Gun Level: <span id="ui-lvl">1</span>/100</div>
+        <div>Cash: $<span id="ui-cash">0</span></div>
+        <button id="up-btn" class="btn-upgrade" onclick="buyUpgrade()">UPGRADE GUN ($50)</button>
+    </div>
+
+    <div id="game-wrapper">
+        <canvas id="gameCanvas" width="800" height="550"></canvas>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type === 'shoot') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(lvl >= 10 ? 110 : 180, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.12);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+            } else if (type === 'hit') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.08);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'reload') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(300, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'alarm') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(220, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            }
+        }
+
+        // Animated Theatre Cutscene System
+        const cCanvas = document.getElementById("cutsceneCanvas");
+        const cCtx = cCanvas.getContext("2d");
+        let animationStep = 0;
+        let cutsceneTimer = 0;
+        let eggY = -50, eggCracked = false, spores = [];
+
+        const subLines = [
+            "Shuceeb, Aadam, Yakoub, Daiyon, Arafat, and Naythan were chilled out at their house, screen-glued and playing video games together...",
+            "Suddenly, the power cuts out! Mr. Trump breaks onto the TV screen breathing heavily: 'My fellow Americans... danger is upon us!'",
+            "'A rogue scientist inside our top secret underground facility has accidentally dropped and cracked open a classified Alien Egg asset!'",
+            "The cracked shell sprays alien spores through the air vents, mutating everyone into hyper-aggressive flesh-eating monsters!",
+            "Outside, terrifying creature roars echo closer. The squad scrambles to grab weapons. Run or fight—the apocalypse is here!"
+        ];
+
+        function runCutsceneAnimator() {
+            if (document.getElementById("cutscene-screen").style.display === "none") return;
+            cCtx.clearRect(0, 0, 750, 400);
+            cutsceneTimer++;
+
+            // Draw Shared Background House Floor
+            cCtx.fillStyle = "#1e110b"; cCtx.fillRect(0, 0, 750, 400);
+            cCtx.fillStyle = "#331a00"; cCtx.fillRect(50, 50, 650, 300);
+
+            let sColors = ['#00ffff', '#ff0055', '#ffcc00', '#9900ff', '#00ff66', '#ff6600'];
+
+            if (animationStep === 0) {
+                // Drawing Scene 1: The Gaming Session
+                cCtx.fillStyle = "#444"; cCtx.fillRect(350, 160, 50, 35); // The TV Stand
+                // Glowing Game Screen
+                cCtx.fillStyle = "rgb(" + (100 + Math.sin(cutsceneTimer*0.2)*155) + ", 50, 255)";
+                cCtx.fillRect(340, 120, 70, 45); 
+
+                // Draw the 6 friends sitting around the couch area
+                sColors.forEach((color, idx) => {
+                    let posX = 200 + (idx * 60);
+                    let posY = 260 + (Math.sin(cutsceneTimer*0.1 + idx)*4); // Breathing animation
+                    cCtx.fillStyle = color; cCtx.fillRect(posX, posY, 22, 22);
+                    // Tiny Controllers
+                    cCtx.fillStyle = "white"; cCtx.fillRect(posX + 6, posY - 4, 10, 4);
+                });
+            } 
+            else if (animationStep === 1 || animationStep === 2) {
+                // Drawing Scene 2: Trump static emergency warning
+                cCtx.fillStyle = "#000"; cCtx.fillRect(0, 0, 750, 400);
+                // TV Static Background border
+                for(let i=0; i<750; i+=15) {
+                    for(let j=0; j<400; j+=15) {
+                        if(Math.random() > 0.5) { cCtx.fillStyle = "#222"; cCtx.fillRect(i,j,15,15); }
+                    }
+                }
+                // Central Broadcast Frame
+                cCtx.fillStyle = "#002b00"; cCtx.fillRect(175, 50, 400, 300);
+                cCtx.strokeStyle = "#00ff00"; cCtx.lineWidth = 4; cCtx.strokeRect(175, 50, 400, 300);
+
+                // Donald Trump box portrait figure
+                cCtx.fillStyle = "#ffcc99"; cCtx.fillRect(335, 120, 80, 80); // Head
+                cCtx.fillStyle = "#ffaa00"; cCtx.fillRect(330, 95, 90, 28); // Distinct Orange Hair shape
+                cCtx.fillStyle = "#000044"; cCtx.fillRect(310, 200, 130, 100); // Suit Jacket
+                cCtx.fillStyle = "#ff0000"; cCtx.fillRect(370, 200, 10, 60); // Red Tie
+
+                // Mouth speaking animation movement
+                cCtx.fillStyle = "#000";
+                let mouthH = 3 + (Math.sin(cutsceneTimer * 0.4) * 8);
+                cCtx.fillRect(365, 175, 20, Math.max(2, mouthH));
+
+                if(cutsceneTimer % 40 === 0) playSound('alarm');
+            } 
+            else if (animationStep === 3 || animationStep === 4) {
+                // Drawing Scene 3: Alien Egg Asset Falling and Spawning Chaos Spores
+                if(eggY < 180) eggY += 3;
+                else eggCracked = true;
+
+                // Draw panicked squad blocks running around horizontally
+                sColors.forEach((color, idx) => {
+                    let moveRange = 100 + (Math.sin(cutsceneTimer*0.06 + idx) * 200);
+                    cCtx.fillStyle = color; cCtx.fillRect(200 + moveRange, 280, 22, 22);
+                });
+
+                // Render the descending Egg structure
+                if(!eggCracked) {
+                    cCtx.fillStyle = "#9900ff"; // Purple alien egg body
+                    cCtx.beginPath(); cCtx.arc(375, eggY, 30, 0, Math.PI*2); cCtx.fill();
+                    cCtx.strokeStyle = "#ff00ff"; cCtx.lineWidth = 2; cCtx.stroke();
+                } else {
+                    // Split the shell fragments apart visually
+                    cCtx.fillStyle = "#7700cc";
+                    cCtx.beginPath(); cCtx.arc(350, 180, 25, Math.PI*0.5, Math.PI*1.5); cCtx.fill(); // Left shell half
+                    cCtx.beginPath(); cCtx.arc(400, 180, 25, Math.PI*1.5, Math.PI*0.5); cCtx.fill(); // Right shell half
+
+                    // Generate ascending green radioactive hazard spores dynamically
+                    if(Math.random() < 0.25) {
+                        spores.push({ x: 375 + (Math.random()*20 - 10), y: 180, vx: Math.random()*6 - 3, vy: -Math.random()*4 - 1 });
+                    }
+                }
+
+                // Render out current explosive cloud spores array
+                spores.forEach((spore, sIdx) => {
+                    spore.x += spore.vx; spore.y += spore.vy;
+                    cCtx.fillStyle = "rgba(57, 230, 57, 0.7)";
+                    cCtx.beginPath(); cCtx.arc(spore.x, spore.y, 8, 0, Math.PI*2); cCtx.fill();
+                    if(spore.y < 0) spores.splice(sIdx, 1);
+                });
+            }
+
+            requestAnimationFrame(runCutsceneAnimator);
+        }
+        // Fire initialization loop immediately
+        requestAnimationFrame(runCutsceneAnimator);
+
+        function nextCutsceneStep() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            animationStep++;
+            if (animationStep < subLines.length) {
+                document.getElementById("subtitles").innerText = subLines[animationStep];
+                if (animationStep === subLines.length - 1) document.getElementById("cutscene-btn").innerText = "ENTER THE APOCALYPSE";
+            } else {
+                document.getElementById("cutscene-screen").style.display = "none";
+                document.getElementById("menu-screen").style.display = "flex";
+            }
+        }
+        document.getElementById("subtitles").innerText = subLines[0];
+
+        // --- Core Game Variables & Loop Structure (Preserved from previous update) ---
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        let cash = 0, lvl = 1, cost = 50, hp = 100, currentWeapon = "M1911 Pistol";
+        let player = { x: 400, y: 275, size: 20, color: '#00ffff', speed: 4, angle: 0, perk: '' };
+        let bullets = [], enemyBullets = [], zombies = [], bosses = [];
+        let keys = {}, mouseX = 0, mouseY = 0;
+        let isGameRunning = false, zombieInterval, medicInterval;
+        let bossActive = false;
+        
+        let currentAmmo = 7, maxAmmo = 7, isReloading = false, reloadTimer = 0, weaponCooldown = 0;
+        let tier1Defeated = false, tier2Defeated = false, tier3Defeated = false, tier4Defeated = false;
+
+        function startGame(name, color, perk) {
+            cash = 0; lvl = 1; cost = 50; hp = 100; currentWeapon = "M1911 Pistol";
+            bullets = []; enemyBullets = []; zombies = []; bosses = []; keys = {}; bossActive = false;
+            tier1Defeated = false; tier2Defeated = false; tier3Defeated = false; tier4Defeated = false;
+            isReloading = false; reloadTimer = 0; weaponCooldown = 0;
+            player.x = 400; player.y = 275;
+            player.color = color; player.perk = perk;
+            player.speed = perk === 'speed' ? 5.5 : 4;
+            if (perk === 'tactical') { lvl = 5; cost = 120; }
+            
+            checkWeaponTier(); currentAmmo = maxAmmo; updateUI();
+
+            document.getElementById("ui-name").innerText = name;
+            document.getElementById("ui-name").style.color = color;
+            document.getElementById("menu-screen").style.display = "none";
+            document.getElementById("ui-box").style.display = "flex";
+            document.getElementById("game-wrapper").style.display = "block";
+            
+            isGameRunning = true;
+            zombieInterval = setTimeout(spawnZombie, 1000);
+            if (perk === 'medic') medicInterval = setInterval(() => { if(hp < 100) { hp = Math.min(100, hp + 5); updateUI(); } }, 3000);
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function returnToMenu() {
+            isGameRunning = false; clearTimeout(zombieInterval); clearInterval(medicInterval);
+            document.getElementById("ui-box").style.display = "none";
+            document.getElementById("game-wrapper").style.display = "none";
+            document.getElementById("menu-screen").style.display = "flex";
+        }
+
+        function buyUpgrade() {
+            if (cash >= cost && lvl < 100) {
+                cash -= cost; lvl++; cost = Math.floor(cost * 1.25);
+                if (player.perk === 'speed') player.speed += 0.3;
+                else player.speed += 0.2;
+                checkWeaponTier();
+                if (lvl % 10 === 0) triggerMilestoneBoss();
+                updateUI();
+            }
+        }
+
+        function triggerMilestoneBoss() {
+            bossActive = true; zombies = [];
+            let multiplier = lvl / 10;
+            bosses.push({ x: 400, y: -50, hp: 40 + (multiplier * 40), maxHp: 40 + (multiplier * 40), size: 35 + (multiplier * 5), speed: 0.6 + (multiplier * 0.1), tier: multiplier });
+        }
+
+        function checkWeaponTier() {
+            if (lvl >= 50) { currentWeapon = "Tactical Mini-Gun"; maxAmmo = 100; }
+            else if (lvl >= 35) { currentWeapon = "Laser Railgun"; maxAmmo = 3; }
+            else if (lvl >= 20) { currentWeapon = "Plasma Rifle"; maxAmmo = 30; }
+            else if (lvl >= 10) { currentWeapon = "Remington Shotgun"; maxAmmo = 5; }
+            else { currentWeapon = "M1911 Pistol"; maxAmmo = 7; }
+            document.getElementById("ui-weapon").innerText = currentWeapon;
+        }
+
+        window.addEventListener("keydown", e => { 
+            if(!isGameRunning) return;
+            keys[e.key.toLowerCase()] = true; 
+            if(e.key.toLowerCase() === 'r' && !isReloading && currentAmmo < maxAmmo) startManualReload();
+        });
+        window.addEventListener("keyup", e => { if(isGameRunning) keys[e.key.toLowerCase()] = false; });
+        window.addEventListener("mousemove", e => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = (e.clientY - rect.top) * 1.4; 
+        });
+        canvas.addEventListener("mousedown", () => { if(isGameRunning) fireWeapon(); });
+
+        function startManualReload() {
+            isReloading = true;
+            if(currentWeapon === "Tactical Mini-Gun") reloadTimer = 150;
+            else if(currentWeapon === "Laser Railgun") reloadTimer = 120;
+            else if(currentWeapon === "Remington Shotgun") reloadTimer = 90;
+            else reloadTimer = 50;
+            playSound('reload');
+            document.getElementById("ui-reloading").style.display = "inline";
+        }
+
+        function fireWeapon() {
+            if (isReloading || weaponCooldown > 0) return;
+            if (currentAmmo <= 0) { startManualReload(); return; }
+            currentAmmo--; playSound('shoot');
+            const baseAngle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            let bDamage = 1 + Math.floor(lvl / 8);
+
+            if (currentWeapon === "M1911 Pistol") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*8, vy: Math.sin(baseAngle)*8, dmg: bDamage, color: "#ffff00", life: 1, size: 7 });
+                weaponCooldown = 15;
+            } else if (currentWeapon === "Remington Shotgun") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle-0.2)*8, vy: Math.sin(baseAngle-0.2)*8, dmg: bDamage, color: "#ff3300", life: 1, size: 6 });
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*8, vy: Math.sin(baseAngle)*8, dmg: bDamage, color: "#ff3300", life: 1, size: 6 });
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle+0.2)*8, vy: Math.sin(baseAngle+0.2)*8, dmg: bDamage, color: "#ff3300", life: 1, size: 6 });
+                weaponCooldown = 35;
+            } else if (currentWeapon === "Plasma Rifle") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*10, vy: Math.sin(baseAngle)*10, dmg: bDamage * 1.5, color: "#00ffff", life: 1, size: 10 });
+                weaponCooldown = 8;
+            } else if (currentWeapon === "Laser Railgun") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle)*12, vy: Math.sin(baseAngle)*12, dmg: bDamage * 2, color: "#00ff00", life: 4, size: 5 });
+                weaponCooldown = 50;
+            } else if (currentWeapon === "Tactical Mini-Gun") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle-0.05)*11, vy: Math.sin(baseAngle-0.05)*11, dmg: bDamage, color: "magenta", life: 1, size: 6 });
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle+0.05)*11, vy: Math.sin(baseAngle+0.05)*11, dmg: bDamage, color: "orange", life: 1, size: 6 });
+                weaponCooldown = 4;
+            }
+            updateUI();
+        }
+
+        function spawnZombie() {
+            if(!isGameRunning) return;
+            if(!bossActive) {
+                let side = Math.floor(Math.random() * 4); let rand = Math.random();
+                let z = { x: 0, y: 0, hp: 1 + Math.floor(lvl/6), maxHp: 1 + Math.floor(lvl/6), speed: 1.5, color: "#39e639", type: "normal", shootCooldown: 0 };
+                if(side === 0) { z.x = Math.random()*800; z.y = -30; }
+                else if(side === 1) { z.x = 830; z.y = Math.random()*550; }
+                else if(side === 2) { z.x = Math.random()*800; z.y = 580; }
+                else { z.x = -30; z.y = Math.random()*550; }
+
+                if (tier4Defeated && rand < 0.12) { z.color = "#9900ff"; z.type = "purple_gunner"; z.speed = 1.3; } 
+                else if (tier3Defeated && rand < 0.36) { z.color = "#ff6600"; z.type = "orange_brute"; z.hp *= 2.4; z.maxHp *= 2.4; z.speed = 1.0; } 
+                else if (tier2Defeated && rand < 0.45) { z.color = "#0055ff"; z.type = "blue_sprinter"; z.speed *= 1.45; } 
+                else if (tier1Defeated && rand < 0.80) { z.color = "#ff0000"; z.type = "red_stalker"; z.hp *= 1.25; z.maxHp *= 1.25; }
+                zombies.push(z);
+            }
+            zombieInterval = setTimeout(spawnZombie, Math.max(150, 1400 - (lvl * 18)));
+        }
+
+        function gameLoop() {
+            if(!isGameRunning) return;
+            ctx.clearRect(0, 0, 800, 550);
+            if(weaponCooldown > 0) weaponCooldown--;
+            if (isReloading) {
+                reloadTimer--;
+                if (reloadTimer <= 0) { currentAmmo = maxAmmo; isReloading = false; document.getElementById("ui-reloading").style.display = "none"; updateUI(); }
+            }
+
+            if (keys['w'] && player.y > player.size) player.y -= player.speed;
+            if (keys['s'] && player.y < 550 - player.size) player.y += player.speed;
+            if (keys['a'] && player.x > player.size) player.x -= player.speed;
+            if (keys['d'] && player.x < 800 - player.size) player.x += player.speed;
+            player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+
+            // Grid Arena Map
+            ctx.strokeStyle = "#223322"; ctx.lineWidth = 1;
+            for(let i=0; i<800; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,550); ctx.stroke(); }
+            for(let j=0; j<550; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(800,j); ctx.stroke(); }
+
+            // PLAYER MODEL
+            ctx.save();
+            ctx.fillStyle = "red"; ctx.fillRect(player.x - 20, player.y - 32, 40, 5);
+            ctx.fillStyle = "#00ff00"; ctx.fillRect(player.x - 20, player.y - 32, (hp / 100) * 40, 5);
+            ctx.translate(player.x, player.y); ctx.rotate(player.angle);
+            ctx.fillStyle = "#555"; ctx.fillRect(5, -5, 25, 6);
+            ctx.fillStyle = player.color; ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, 0, player.size*0.6, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+
+            // BULLETS COLLISION DETECTION
+            bullets.forEach((b, bIdx) => {
+                b.x += b.vx; b.y += b.vy; ctx.fillStyle = b.color;
+                ctx.fillRect(b.x - Math.floor(b.size/2), b.y - Math.floor(b.size/2), b.size, b.size);
+                if (b.x < 0 || b.x > 800 || b.y < 0 || b.y > 550) bullets.splice(bIdx, 1);
+
+                zombies.forEach((z, zIdx) => {
+                    if (Math.hypot(b.x - z.x, b.y - z.y) < 22) {
+                        let dealt = b.dmg; if (player.perk === 'lucky' && Math.random() < 0.12) dealt = 999;
+                        z.hp -= dealt; b.life--; playSound('hit');
+                        if (z.hp <= 0) { zombies.splice(zIdx, 1); cash += player.perk === 'looter' ? 30 : 15; updateUI(); }
+                        if (b.life <= 0) bullets.splice(bIdx, 1);
+                    }
+                });
+
+                bosses.forEach((boss, bossIdx) => {
+                    if (Math.hypot(b.x - boss.x, b.y - boss.y
