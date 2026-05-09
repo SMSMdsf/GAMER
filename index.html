@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Defend The Block | The Skittle Outbreak</title>
+    <style>
+        body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; user-select: none; overflow-x: hidden; }
+        #main-container { display: none; justify-content: center; align-items: flex-start; margin: 20px auto; max-width: 1100px; }
+        canvas { background: #111411; border: 4px solid #333; cursor: default; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        #sidebar { width: 260px; background: #151815; border: 4px solid #333; border-left: none; padding: 12px; text-align: left; box-sizing: border-box; height: 508px; overflow-y: auto; }
+        .tower-btn { width: 100%; padding: 8px; margin: 5px 0; background: #222; color: #00ff00; border: 2px solid #00ff00; font-weight: bold; cursor: pointer; text-transform: uppercase; text-align: left; font-size: 11px; }
+        .tower-btn:hover:not(:disabled) { background: #00ff00; color: #000; box-shadow: 0 0 10px #00ff00; }
+        .tower-btn:disabled { border-color: #444; color: #555; cursor: not-allowed; }
+        .stat-line { font-size: 15px; margin: 8px 0; font-weight: bold; color: #fff; }
+        .screen { padding: 40px; max-width: 700px; margin: auto; height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #story-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff00ff; min-height: 150px; text-transform: uppercase; font-weight: bold; }
+        .next-btn { background: #ff00ff; color: #fff; border: none; padding: 10px 25px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 0 10px #ff00ff; }
+    </style>
+</head>
+<body>
+
+    <!-- INSTANT CAPTION OVERRIDE SCREEN -->
+    <div id="story-screen" class="screen">
+        <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px;">🍬 EMERGENCY SUBTITLES 🍬</h2>
+        <div id="story-text">Loading subtitles...</div>
+        <button id="story-btn" class="next-btn" onclick="nextStoryLine()">NEXT CAPTION</button>
+    </div>
+
+    <!-- MAIN GAME LAYOUT -->
+    <h1 id="game-title" style="display:none; margin: 10px 0 5px 0;">🪚 DEFEND THE BLOCK 🪚</h1>
+    <div id="main-container">
+        <canvas id="tdCanvas" width="800" height="500"></canvas>
+
+        <div id="sidebar">
+            <div class="stat-line" style="color: #ff00ff;">Wave: <span id="ui-wave">1</span></div>
+            <div class="stat-line" style="color: #ff3333;">Car Armor: <span id="ui-hp">20</span>/20</div>
+            <div class="stat-line" style="color: #00ffff;">Cash: $<span id="ui-cash">150</span></div>
+            <hr style="border: 1px solid #333;">
+            <div style="font-size: 11px; color: #aaa; margin-bottom: 3px;">DEPLOY BOYS:</div>
+            
+            <button id="btn-shuceeb" class="tower-btn" onclick="selectTowerType('shuceeb', 100)">Shuceeb ($100)<br><span style="color:#aaa; font-size:10px;">Super Speed & Strength</span></button>
+            <button id="btn-aadam" class="tower-btn" onclick="selectTowerType('aadam', 125)">Aadam ($125)<br><span style="color:#aaa; font-size:10px;">Best Armor & Lvl 5 Gun</span></button>
+            <button id="btn-yakoub" class="tower-btn" onclick="selectTowerType('yakoub', 175)">Yakoub ($175)<br><span style="color:#aaa; font-size:10px;">White Laser & Heal (10s)</span></button>
+            <button id="btn-daiyon" class="tower-btn" onclick="selectTowerType('daiyon', 150)">Daiyon ($150)<br><span style="color:#aaa; font-size:10px;">1.25x Dmg & Lvl 10 Gun</span></button>
+            <button id="btn-arafat" class="tower-btn" onclick="selectTowerType('arafat', 200)">Arafat ($200)<br><span style="color:#aaa; font-size:10px;">Lvl 10 Gun & Car Heal (5s)</span></button>
+            <button id="btn-naythan" class="tower-btn" onclick="selectTowerType('naythan', 250)">Naythan ($250)<br><span style="color:#aaa; font-size:10px;">Shotgun & 65.7% Insta-Kill</span></button>
+            
+            <div id="placement-mode" style="color: #ff00ff; font-size: 11px; margin-top: 10px; display: none; text-align: center; font-weight: bold; animation: flash 1s infinite;">[ CLICK MAP TO DEPLOY ]</div>
+        </div>
+    </div>
+
+    <script>
+        // Custom Skittle Captions Script Script Configuration
+        const storyLines = [
+            "[SCENE 1: COAL CORNER SHOP]\n\nSHUCEEB LEAVES THE GAMING HOUSE TO BUY A MASSIVE STASH OF SKITTLES FOR ALL HIS FRIENDS...",
+            "[SCENE 2: THE ENCOUNTER]\n\nAT THE CORNER, SHUCEEB SPOTS A WEIRD LOOKING GLOWING SPIDER CRAWLING ALONG THE CONCRETE WALL.",
+            "[SCENE 3: THE INFECTION]\n\nTHE SPIDER SUDDENLY LEAPS ONTO A PASSING WOMAN! SHE INSTANTLY MUTATES INTO A HORRIFYING FLESH-EATING ALIEN!",
+            "[SCENE 4: PEDAL TO THE METAL]\n\nSHUCEEB RUNS TO HIS SKITTLE CAR, SLAMS THE GAS, AND DRIFTS BACK TO THE HOUSE TO WARN THE CREW!",
+            "[SCENE 5: FORTIFICATION]\n\nSHUCEEB, AADAM, YAKOUB, DAIYON, ARAFAT, AND NAYTHAN AGREE TO FORTIFY THE BLOCK AND DROP DEFENSE TOWERS TO KEEP THE CAR ALIVE!"
+        ];
+        
+        let storyIdx = 0;
+
+        // Instantly flashes captions onto the viewport without software logic hang ups
+        function showCaption() {
+            document.getElementById("story-text").innerText = storyLines[storyIdx];
+            if (storyIdx === storyLines.length - 1) {
+                document.getElementById("story-btn").innerText = "LAUNCH COMBAT GRID";
+            } else {
+                document.getElementById("story-btn").innerText = "NEXT CAPTION";
+            }
+        }
+
+        function nextStoryLine() {
+            storyIdx++;
+            if (storyIdx < storyLines.length) {
+                showCaption();
+            } else {
+                document.getElementById("story-screen").style.display = "none";
+                document.getElementById("game-title").style.display = "block";
+                document.getElementById("main-container").style.display = "flex";
+                initGameEngine();
+            }
+        }
+
+        // Initialize display configuration anchors instantly upon DOM attachment
+        window.onload = function() {
+            showCaption();
+        };
+
+        const canvas = document.getElementById("tdCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let cash = 150, baseHp = 20, maxBaseHp = 20, waveNum = 1;
+        let selectedType = null, selectedCost = 0;
+        let enemies = [], towers = [], projectiles = [], lasers = [];
+        let waveActive = true, spawnCounter = 0, enemiesSpawning = 10;
+        let currentMouseX = 0, currentMouseY = 0;
+
+        const path = [
+            {x: -20, y: 120}, {x: 250, y: 120}, {x: 250, y: 380}, 
+            {x: 550, y: 380}, {x: 550, y: 220}, {x: 820, y: 220}
+        ];
+
+        function initGameEngine() {
+            canvas.addEventListener("mousemove", (e) => {
+                const rect = canvas.getBoundingClientRect();
+                currentMouseX = e.clientX - rect.left;
+                currentMouseY = e.clientY - rect.top;
+            });
+            canvas.addEventListener("mousedown", placeDefenderUnit);
+            setInterval(gameTick, 1000 / 30);
+            setTimeout(spawnZombieWave, 1000);
+            
+            setInterval(() => {
+                let arafatCount = towers.filter(t => t.type === 'arafat').length;
+                if (arafatCount > 0 && baseHp < maxBaseHp) {
+                    baseHp = Math.min(maxBaseHp, baseHp + (3 * arafatCount));
+                    updateUI();
+                }
+            }, 5000);
+        }
+
+        function selectTowerType(type, cost) {
+            if (cash >= cost) {
+                selectedType = type;
+                selectedCost = cost;
+                document.getElementById("placement-mode").style.display = "block";
+            }
+        }
+
+        function placeDefenderUnit() {
+            if (!selectedType) return;
+            if (isOnRoad(currentMouseX, currentMouseY)) return;
+
+            let range = 100, fireRate = 25, color = "#00ffff", size = 15; 
+            
+            if (selectedType === "shuceeb") { range = 110; fireRate = 12; color = "#00ffff"; size = 15; }
+            if (selectedType === "aadam") { range = 115; fireRate = 18; color = "#ff0055"; size = 19; }
+            if (selectedType === "yakoub") { range = 240; fireRate = 300; color = "#ffcc00"; size = 14; }
+            if (selectedType === "daiyon") { range = 150; fireRate = 10; color = "#9900ff"; size = 15; }
+            if (selectedType === "arafat") { range = 140; fireRate = 12; color = "#00ff66"; size = 16; }
+            if (selectedType === "naythan") { range = 85; fireRate = 45; color = "#ff6600"; size = 17; }
+
+            towers.push({ x: currentMouseX, y: currentMouseY, type: selectedType, range: range, fireRate: fireRate, cd: 0, color: color, size: size });
+            cash -= selectedCost;
+            
+            selectedType = null;
+            document.getElementById("placement-mode").style.display = "none";
+            updateUI();
+        }
+
+        function isOnRoad(px, py) {
+            if (py >= 85 && py <= 155 && px <= 285) return true;
+            if (px >= 215 && px <= 285 && py >= 85 && py <= 415) return true;
+            if (py >= 345 && py <= 415 && px >= 215 && px <= 585) return true;
+            if (px >= 515 && px <= 585 && py >= 185 && py <= 415) return true;
+            if (py >= 185 && py <= 255 && px >= 515) return true;
+            return false;
+        }
+
+        function spawnZombieWave() {
+            if (enemiesSpawning > 0) {
+                let eHp = 2 + Math.floor(waveNum * 1.6);
+                let speed = 1.2 + (waveNum * 0.04);
+                let isSpiderAlien = Math.random() < 0.25;
+                
+                enemies.push({ 
+                    x: path.x, y: path.y, 
+                    pathIndex: 0, 
+                    hp: isSpiderAlien ? eHp * 0.7 : eHp, 
+                    maxHp: isSpiderAlien ? eHp * 0.7 : eHp, 
+                    speed: isSpiderAlien ? speed * 1.6 : speed, 
+                    size: isSpiderAlien ? 7 : 11,
+                    color: isSpiderAlien ? "#ff00ff" : "#39e639"
+                });
+                enemiesSpawning--;
+                setTimeout(spawnZombieWave, Math.max(300, 1500 - waveNum * 50));
+            }
+        }
+
+        function gameTick() {
+            enemies.forEach((e, idx) => {
+                let target = path[e.pathIndex + 1];
+                let dist = Math.hypot(target.x - e.x, target.y - e.y);
+                
+                if (dist > e.speed) {
+                    e.x += ((target.x - e.x) / dist) * e.speed;
+                    e.y += ((target.y - e.y) / dist) * e.speed;
+                } else {
+                    e.pathIndex++;
+                    if (e.pathIndex >= path.length - 1) {
+                        baseHp--; enemies.splice(idx, 1); updateUI();
+                        if (baseHp <= 0) { alert("THE ALIEN OUTBREAK DESTROYED THE SKITTLE CAR! Game Over."); location.reload(); }
+                    }
+                }
+            });
+
+            lasers.forEach((l, idx) => { l.life--; if(l.life <= 0) lasers.splice(idx, 1); });
+
+            towers.forEach(t => {
+                if (t.cd > 0) t.cd--;
+                if (t.cd === 0) {
+                    let targetEnemy = null, closestDist = t.range;
+                    enemies.forEach(e => {
+                        let d = Math.hypot(e.x - t.x, e.y - t.y);
+                        if (d < closestDist) { closestDist = d; targetEnemy = e; }
+                    });
+                    
+                    if (targetEnemy) {
+                        if (t.type === "yakoub") {
+                            lasers.push({ sx: t.x, sy: t.y, tx: targetEnemy.x, ty: targetEnemy.y, life: 12 });
+                            enemies.forEach((e, eIdx) => {
+                                if (Math.hypot(e.x - targetEnemy.x, e.y - targetEnemy.y) < 90) {
+                                    e.hp -= 15;
+                                    if (e.hp <= 0) { enemies.splice(eIdx, 1); cash += 15; }
+                                }
+                            });
+                            if (baseHp < maxBaseHp) baseHp = Math.min(maxBaseHp, baseHp + 5);
+                            t.cd = t.fireRate;
+                            updateUI();
+                        } else {
+                            let dmg = 1;
+                            if(t.type === "shuceeb") dmg = 3.5;
+                            if(t.type === "aadam") dmg = 2.5;
+                            if(t.type === "daiyon") dmg = 4.25;
+                            if(t.type === "arafat") dmg = 3.8;
+                            if(t.type === "naythan") dmg = 5.0;
+                            
+                            projectiles.push({ 
+                                x: t.x, y: t.y, 
+                                tx: targetEnemy.x, ty: targetEnemy.y, 
+                                speed: 15, target: targetEnemy, 
+                                dmg: dmg, color: t.color, type: t.type 
+                            });
+                            t.cd = t.fireRate;
+                        }
+                    }
+                }
+            });
+
+            projectiles.forEach((p, idx) => {
+                let d = Math.hypot(p.target.x - p.x, p.target.y - p.y);
+                if (d > p.speed) {
+                    p.x += ((p.target.x - p.x) / d) * p.speed;
+                    p.y += ((p.target.y - p.y) / d) * p.speed;
+                } else {
+                    let impactDmg = p.dmg;
+                    if(p.type === "naythan" && Math.random() < 0.657) { impactDmg = 999; }
+                    
+                    p.target.hp -= impactDmg;
+                    projectiles.splice(idx, 1);
+                    
+                    if (p.target.hp <= 0) {
+                        let targetIdx = enemies.indexOf(p.target);
+                        if (targetIdx > -1) { enemies.splice(targetIdx, 1); cash += 15; updateUI(); }
+                    }
+                }
+            });
+
+            if (enemiesSpawning === 0 && enemies.length === 0) {
+                waveNum++; enemiesSpawning = 8 + (waveNum * 4);
+                updateUI();
+                setTimeout(spawnZombieWave, 3000);
+            }
+
+            // RENDERING LAYOUT ENGINE
+            ctx.clearRect(0, 0, 800, 500);
+
+            ctx.strokeStyle = "#333"; ctx.lineWidth = 44; ctx.lineCap = "round"; ctx.lineJoin = "round";
+            ctx.beginPath(); ctx.moveTo(path.x, path.y);
+            for(let i=1; i<path.length; i++) ctx.lineTo(path[i].x, path[i].y); ctx.stroke();
+
+            // Skittle Car Base Frame
+            ctx.fillStyle = "#ff00ff"; ctx.fillRect(750, 195, 45, 25);
+            ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(760, 222, 6, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(785, 222, 6, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#fff"; ctx.font = "bold 9px Arial"; ctx.fillText("SKITTLES", 752, 210);
+
+            towers.forEach(t => {
+                ctx.fillStyle = t.color; ctx.beginPath(); ctx.arc(t.x, t.y, t.size, 0, Math.PI*2); ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
+                ctx.fillStyle = "#000"; ctx.font = "bold 10px Arial"; ctx.fillText(t.type.substring(0,2).toUpperCase(), t.x-6, t.y+4);
+            });
+
+            lasers.forEach(l => {
+                ctx.strokeStyle = "rgba(255, 255, 255, " + (l.life / 12) + ")"; ctx.lineWidth = 6;
+                ctx.beginPath(); ctx.moveTo(l.sx, l.sy); ctx.lineTo(l.tx, l.ty); ctx.stroke();
+            });
+
+            if (selectedType) {
+                ctx.strokeStyle = "rgba(255, 0, 255, 0.25)"; ctx.lineWidth = 2; ctx.beginPath();
+                let r = 100;
+                if(selectedType === "shuceeb") r = 110; if(selectedType === "aadam") r = 115; if(selectedType === "yakoub") r = 240; if(selectedType === "daiyon") r = 150; if(selectedType === "arafat") r = 140; if(selectedType === "naythan") r = 85;
+                ctx.arc(currentMouseX, currentMouseY, r, 0, Math.PI*2); ctx.stroke();
+                ctx.fillStyle = "rgba(255, 0, 255, 0.03)"; ctx.fill();
+            }
+
+            enemies.forEach(e => {
+                ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "red"; ctx.fillRect(e.x - 10, e.y - 14, 20, 3);
+                ctx.fillStyle = "green"; ctx.fillRect(e.x - 10, e.y - 14, (e.hp / e.maxHp) * 20, 3);
+            });
+
+            projectiles.forEach(p => {
+                ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+            });
+        }
+
+        function updateUI() {
+            document.getElementById("ui-wave").innerText = waveNum;
+            document.getElementById("ui-hp").innerText = baseHp;
+            document.getElementById("ui-cash").innerText = cash;
+            document.getElementById("btn-shuceeb").disabled = cash < 100;
+            document.getElementById("btn-aadam").disabled = cash < 125;
+            document.getElementById("btn-yakoub").disabled = cash < 175;
+            document.getElementById("btn-daiyon").disabled = cash < 150;
+            document.getElementById("btn-arafat").disabled = cash < 200;
+            document.getElementById("btn-naythan").disabled = cash < 250;
+        }
+    </script>
+</body>
+</html>
