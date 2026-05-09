@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Defend The Block | The Skittle Outbreak</title>
+    <title>The Skittlini Outbreakini | Tactical TD</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; user-select: none; overflow-x: hidden; }
         #main-container { display: none; justify-content: center; align-items: flex-start; margin: 20px auto; max-width: 1100px; }
@@ -20,13 +20,13 @@
 
     <!-- INSTANT CAPTION OVERRIDE SCREEN -->
     <div id="story-screen" class="screen">
-        <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px;">🍬 EMERGENCY SUBTITLES 🍬</h2>
+        <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px;">🍬 THE SKITTLINI OUTBREAKINI 🍬</h2>
         <div id="story-text">Loading subtitles...</div>
         <button id="story-btn" class="next-btn" onclick="nextStoryLine()">NEXT CAPTION</button>
     </div>
 
     <!-- MAIN GAME LAYOUT -->
-    <h1 id="game-title" style="display:none; margin: 10px 0 5px 0;">🪚 DEFEND THE BLOCK 🪚</h1>
+    <h1 id="game-title" style="display:none; margin: 10px 0 5px 0;">🪚 THE SKITTLINI OUTBREAKINI 🪚</h1>
     <div id="main-container">
         <canvas id="tdCanvas" width="800" height="500"></canvas>
 
@@ -49,18 +49,16 @@
     </div>
 
     <script>
-        // Custom Skittle Captions Script Script Configuration
         const storyLines = [
             "[SCENE 1: COAL CORNER SHOP]\n\nSHUCEEB LEAVES THE GAMING HOUSE TO BUY A MASSIVE STASH OF SKITTLES FOR ALL HIS FRIENDS...",
             "[SCENE 2: THE ENCOUNTER]\n\nAT THE CORNER, SHUCEEB SPOTS A WEIRD LOOKING GLOWING SPIDER CRAWLING ALONG THE CONCRETE WALL.",
             "[SCENE 3: THE INFECTION]\n\nTHE SPIDER SUDDENLY LEAPS ONTO A PASSING WOMAN! SHE INSTANTLY MUTATES INTO A HORRIFYING FLESH-EATING ALIEN!",
             "[SCENE 4: PEDAL TO THE METAL]\n\nSHUCEEB RUNS TO HIS SKITTLE CAR, SLAMS THE GAS, AND DRIFTS BACK TO THE HOUSE TO WARN THE CREW!",
-            "[SCENE 5: FORTIFICATION]\n\nSHUCEEB, AADAM, YAKOUB, DAIYON, ARAFAT, AND NAYTHAN AGREE TO FORTIFY THE BLOCK AND DROP DEFENSE TOWERS TO KEEP THE CAR ALIVE!"
+            "[SCENE 5: FORTIFICATION]\n\nTHE BOYS AGREE TO FORTIFY THE BLOCK AND DROP DEFENSE TOWERS TO STOP THE SKITTLINI OUTBREAKINI!"
         ];
         
         let storyIdx = 0;
 
-        // Instantly flashes captions onto the viewport without software logic hang ups
         function showCaption() {
             document.getElementById("story-text").innerText = storyLines[storyIdx];
             if (storyIdx === storyLines.length - 1) {
@@ -82,7 +80,6 @@
             }
         }
 
-        // Initialize display configuration anchors instantly upon DOM attachment
         window.onload = function() {
             showCaption();
         };
@@ -190,7 +187,7 @@
                     e.pathIndex++;
                     if (e.pathIndex >= path.length - 1) {
                         baseHp--; enemies.splice(idx, 1); updateUI();
-                        if (baseHp <= 0) { alert("THE ALIEN OUTBREAK DESTROYED THE SKITTLE CAR! Game Over."); location.reload(); }
+                        if (baseHp <= 0) { alert("THE OUTBREAKINI DESTROYED THE SKITTLE CAR! Game Over."); location.reload(); }
                     }
                 }
             });
