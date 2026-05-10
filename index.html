@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>The Skittlini & Zombini  | 2D Action Arena</title>
+    <title>The Skittlini Zombini Or Alienili | 2D Action Arena</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
@@ -100,7 +100,9 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
             let vBtn = document.getElementById("v-toggle");
             vBtn.innerText = "📢 AI ANNOUNCER ONLINE";
-            vBtn.style.background = "#ff00ff"; vBtn.style.color = "white"; vBtn.style.boxShadow = "0 0 15px #ff00ff";
+            vBtn.style.background = "#ff00ff";
+            vBtn.style.color = "white";
+            vBtn.style.boxShadow = "0 0 15px #ff00ff";
             speakCaptionText(storyLines[storyIdx]);
         }
 
@@ -158,6 +160,7 @@
                 gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.05);
             } else if (type === 'lvl') {
+                // FIXED HARMONIC VALUE ASSIGNMENT ERROR
                 osc.type = 'sine'; osc.frequency.setValueAtTime(350, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.25);
                 gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
@@ -183,7 +186,7 @@
             "[MUTANT SPORES LOCKING ENEMY TRAILING MATRIX]",
             "[LEFT SPAWN GATE ACTIVE: SPRINTING THREAT INBOUND]",
             "[SKITTLINI MATRIX ENERGY FIELD RECHARGING]",
-            "[ALERT: HIGH DENSITY BIO-THREAT SPOTTED LEFT]"
+            "[ALERT: HIGH VELOCITY BIO-THREAT SPOTTED LEFT]"
         ];
         let colorIdx = 0;
 
@@ -286,7 +289,7 @@
             if (ammo <= 0) { startManualReload(); return; }
 
             ammo--; playSound('shoot');
-            let bAngle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            let bAngle = Math.atan2(mouseY - player.y, mouseX - pointerX || mouseX - player.x);
             let bulletPowerMultiplier = 1 + (roundNum * 0.1);
             
             if (currentWeaponName === "M4 Carbine Rifle") {
@@ -316,25 +319,27 @@
         function spawnZombie() {
             if (canvas.style.display !== "block") return;
             if (!bossActive) {
-                let eX = -20;
-                let alienType = "normal";
-                let alienColor = "#39e639";
-                let bounty = 15;
-                let hpValue = 1 + Math.floor(roundNum * 0.4);
+                let eX = -20; 
+                let rand = Math.random();
+                // DEFAULT VARIANT VALUES
+                let zColor = "#39e639", zType = "normal", zReward = 15, zSpeed = 3.7 + (roundNum * 0.25), zHp = 1 + Math.floor(roundNum * 0.4);
 
-                // DYNAMIC LEVEL MUTATION ARCHETYPE
+                // COMPLEX VARIANT ALLOCATION LOGIC MATRIX
                 if (roundNum >= 30) {
-                    alienType = "purple"; alienColor = "#bc00dd"; bounty = 120; hpValue *= 2.5;
-                } else if (roundNum >= 20) {
-                    alienType = "blue"; alienColor = "#0055ff"; bounty = 60; hpValue *= 1.8;
-                } else if (roundNum >= 10) {
-                    // 83.5% chance to roll an orange alien instead of green baseline
-                    if (Math.random() < 0.835) {
-                        alienType = "orange"; alienColor = "#ff7700"; bounty = 30; hpValue *= 1.4;
-                    }
+                    if (rand < 0.40) { zColor = "#ffcc00"; zType = "gold"; zReward = 120; zSpeed *= 0.8; zHp *= 3.0; }
+                    else if (rand < 0.75) { zColor = "#0055ff"; zType = "blue"; zReward = 60; zSpeed *= 1.4; zHp *= 1.8; }
+                    else { zColor = "#ff6600"; zType = "orange"; zReward = 30; zSpeed *= 1.1; zHp *= 1.5; }
+                } 
+                else if (roundNum >= 20) {
+                    if (rand < 0.50) { zColor = "#0055ff"; zType = "blue"; zReward = 60; zSpeed *= 1.4; zHp *= 1.8; }
+                    else { zColor = "#ff6600"; zType = "orange"; zReward = 30; zSpeed *= 1.1; zHp *= 1.5; }
+                } 
+                else if (roundNum >= 10) {
+                    // Level 10+ 83.5% spawn rate formula
+                    if (rand < 0.835) { zColor = "#ff6600"; zType = "orange"; zReward = 30; zSpeed *= 1.1; zHp *= 1.5; }
                 }
 
-                enemies.push({ x: eX, y: groundY - 12, hp: hpValue, maxHp: hpValue, speed: 3.7 + (roundNum * 0.25), color: alienColor, reward: bounty });
+                enemies.push({ x: eX, y: groundY - 12, hp: zHp, maxHp: zHp, speed: zSpeed, color: zColor, reward: zReward });
             }
             setTimeout(spawnZombie, Math.max(350, 1800 - roundNum * 100));
         }
@@ -371,7 +376,7 @@
                         if(!b.pierce) bullets.splice(bIdx, 1); else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
                         if (e.hp <= 0) { 
                             enemies.splice(eIdx, 1); kills++; 
-                            cash += e.reward; // Grants your exact custom bounty reward based on monster type
+                            cash += e.reward; // Awards custom variable values dynamically based on color type slain
                             updateUI(); 
                         }
                     }
@@ -429,21 +434,10 @@
 
             enemies.forEach(e => {
                 ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, 11, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "red"; ctx.fillRect(e.x-3, e.y-4, 2, 2); ctx.fillRect(e.x+2, e.y-4, 2, 2);
+                ctx.fillStyle = "red"; ctx.fillRect(e.x - 10, e.y - 18, 20, 3);
+                ctx.fillStyle = "green"; ctx.fillRect(e.x - 10, e.y - 18, (e.hp / e.maxHp) * 20, 3);
             });
 
             bosses.forEach(boss => {
                 ctx.fillStyle = "#9900ff"; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.size, 0, Math.PI*2); ctx.fill();
-                ctx.strokeStyle = "#ff00ff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.size + 4, 0, Math.PI*2); ctx.stroke();
-                ctx.fillStyle = "yellow"; ctx.fillRect(boss.x - 6, boss.y - 8, 4, 4); ctx.fillRect(boss.x + 2, boss.y - 8, 4, 4);
-                ctx.fillStyle = "red"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 15, boss.size * 2, 5);
-                ctx.fillStyle = "yellow"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 15, (boss.hp / boss.maxHp) * (boss.size * 2), 5);
-            });
-        }
-
-        function updateUI() {
-            document.getElementById("ui-hp").innerText = `${Math.floor(hp)}/100`;
-            document.getElementById("ui-round").innerText = roundNum;
-            document.getElementById("ui-cash").innerText = `$${cash}`;
-            document.getElementById("ui-ammo").innerText = reloadTimer > 0 ? "RELOADING" : `${ammo}/${maxAmmo}`;
-            document.getElementById("
+                ctx.strokeStyle = "#ff00ff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(boss
