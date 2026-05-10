@@ -1,414 +1,271 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>The Skittlini Outbreakini | Tactical TD</title>
+    <title>Skittlini: Black Ops | 2D Tactical Shooter</title>
     <style>
-        body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; user-select: none; overflow-x: hidden; }
-        #main-container { display: none; justify-content: center; align-items: flex-start; margin: 20px auto; max-width: 1100px; }
-        canvas { background: #111411; border: 4px solid #333; cursor: default; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
-        #sidebar { width: 260px; background: #151815; border: 4px solid #333; border-left: none; padding: 12px; text-align: left; box-sizing: border-box; height: 508px; overflow-y: auto; }
-        .tower-btn { width: 100%; padding: 8px; margin: 5px 0; background: #222; color: #00ff00; border: 2px solid #00ff00; font-weight: bold; cursor: pointer; text-transform: uppercase; text-align: left; font-size: 11px; }
-        .tower-btn:hover:not(:disabled) { background: #00ff00; color: #000; box-shadow: 0 0 10px #00ff00; }
-        .tower-btn:disabled { border-color: #444; color: #555; cursor: not-allowed; }
-        .action-btn { width: 100%; padding: 12px; margin: 5px 0; background: #00ff00; color: #000; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 14px; border-radius: 4px; box-shadow: 0 0 10px #00ff00; }
-        .action-btn:disabled { background: #333; color: #555; box-shadow: none; cursor: not-allowed; }
-        .stat-line { font-size: 15px; margin: 8px 0; font-weight: bold; color: #fff; }
-        .screen { padding: 40px; max-width: 700px; margin: auto; height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #story-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff00ff; min-height: 150px; text-transform: uppercase; font-weight: bold; }
-        .next-btn { background: #ff00ff; color: #fff; border: none; padding: 10px 25px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 0 10px #ff00ff; }
-        .hp-bar-container { width: 120px; background: #330000; border: 2px solid #ff0000; height: 16px; border-radius: 4px; display: inline-block; vertical-align: middle; }
-        #ui-hp-fill { width: 100%; background: #00ff00; height: 100%; transition: width 0.1s; }
+        body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
+        #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
+        canvas { background: #111411; border: 4px solid #222; cursor: crosshair; display: block; margin: 20px auto; box-shadow: 0 0 30px rgba(0,255,0,0.1); }
+        .badge { color: #ffff00; text-shadow: 0 0 8px #ffff00; }
     </style>
 </head>
 <body>
 
-    <!-- INSTANT CAPTION SCREEN -->
-    <div id="story-screen" class="screen">
-        <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px;">🍬 THE SKITTLINI OUTBREAKINI 🍬</h2>
-        <div id="story-text">Loading subtitles...</div>
-        <button id="story-btn" class="next-btn" onclick="nextStoryLine()">NEXT CAPTION</button>
+    <!-- HUD DASHBOARD -->
+    <div id="ui-box">
+        <div>OPERATOR: <span id="ui-name" style="color: #ff00ff;">SHUCEEB</span></div>
+        <div>HP: <span id="ui-hp" style="color: #ff3333;">100/100</span></div>
+        <div>WEAPON: <span id="ui-weapon" style="color: #00ffff;">M4 Carbine</span></div>
+        <div>AMMO: <span id="ui-ammo" style="color: #ff00ff;">30/30</span></div>
+        <div>KILLS: <span id="ui-kills" class="badge">0</span></div>
+        <div>SQUAD COMPANIONS: <span id="ui-squad" style="color: #ffff00;">0/5</span></div>
     </div>
 
-    <!-- MAIN GAME LAYOUT -->
-    <h1 id="game-title" style="display:none; margin: 10px 0 5px 0;">🪚 THE SKITTLINI OUTBREAKINI 🪚</h1>
-    <div id="main-container">
-        <canvas id="tdCanvas" width="800" height="550"></canvas>
-
-        <div id="sidebar">
-            <button id="play-btn" class="action-btn" onclick="startWaveCombat()">▶ PLAY WAVE</button>
-            <div class="stat-line" style="color: #ff00ff;">Wave: <span id="ui-wave">1</span></div>
-            <div class="stat-line" style="color: #ff3333;">Car Armor: <div class="hp-bar-container"><div id="ui-hp-fill"></div></div></div>
-            <div class="stat-line" style="color: #00ffff;">Cash: $<span id="ui-cash">150</span></div>
-            <hr style="border: 1px solid #333;">
-            <div style="font-size: 11px; color: #aaa; margin-bottom: 3px;">DEPLOY BOYS:</div>
-            
-            <button id="btn-shuceeb" class="tower-btn" style="border-color: #ff00ff; color: #ff00ff;" onclick="selectTowerType('shuceeb', 50)">Shuceeb ($50)<br><span style="color:#fff; font-size:10px;">👑 Rainbow Skittle Gatling</span></button>
-            <button id="btn-aadam" class="tower-btn" onclick="selectTowerType('aadam', 125)">Aadam ($125)<br><span style="color:#aaa; font-size:10px;">🤖 AI Robot Companion</span></button>
-            <button id="btn-yakoub" class="tower-btn" onclick="selectTowerType('yakoub', 175)">Yakoub ($175)<br><span style="color:#aaa; font-size:10px;">🥛 Cream Laser (2s)</span></button>
-            <button id="btn-daiyon" class="tower-btn" onclick="selectTowerType('daiyon', 150)">Daiyon ($150)<br><span style="color:#aaa; font-size:10px;">1.25x Dmg & Lvl 10 Gun</span></button>
-            <button id="btn-arafat" class="tower-btn" onclick="selectTowerType('arafat', 200)">Arafat ($200)<br><span style="color:#aaa; font-size:10px;">🔥 Minigun (688 Frame Reload)</span></button>
-            <button id="btn-naythan" class="tower-btn" onclick="selectTowerType('naythan', 250)">Naythan ($250)<br><span style="color:#aaa; font-size:10px;">⚔️ Katana Slice Strike</span></button>
-            
-            <div id="placement-mode" style="color: #ff00ff; font-size: 11px; margin-top: 10px; display: none; text-align: center; font-weight: bold; animation: flash 1s infinite;">[ CLICK MAP TO DEPLOY ]</div>
-        </div>
-    </div>
+    <!-- TACTICAL COMBAT ENVIRONMENT -->
+    <canvas id="shooterCanvas" width="900" height="550"></canvas>
 
     <script>
-        const storyLines = [
-            "[SCENE 1: COAL CORNER SHOP]\n\nSHUCEEB LEAVES THE GAMING HOUSE TO BUY A MASSIVE STASH OF SKITTLES FOR ALL HIS FRIENDS...",
-            "[SCENE 2: THE ENCOUNTER]\n\nAT THE CORNER, SHUCEEB SPOTS A WEIRD LOOKING GLOWING SPIDER CRAWRAMING ALONG THE CONCRETE WALL.",
-            "[SCENE 3: THE INFECTION]\n\nTHE SPIDER SUDDENLY LEAPS ONTO A PASSING WOMAN! SHE INSTANTLY MUTATES INTO A HORRIFYING FLESH-EATING ALIEN!",
-            "[SCENE 4: PEDAL TO THE METAL]\n\nSHUCEEB RUNS TO HIS SKITTLE CAR, SLAMS THE GAS, AND DRIFTS BACK TO THE HOUSE TO WARN THE CREW!",
-            "[SCENE 5: FORTIFICATION]\n\nTHE BOYS AGREE TO FORTIFY THE BLOCK AND DROP DEFENSE TOWERS TO STOP THE SKITTLINI OUTBREAKINI!"
-        ];
-        
-        let storyIdx = 0;
-        function showCaption() {
-            document.getElementById("story-text").innerText = storyLines[storyIdx];
-            if (storyIdx === storyLines.length - 1) {
-                document.getElementById("story-btn").innerText = "LAUNCH COMBAT GRID";
-            } else {
-                document.getElementById("story-btn").innerText = "NEXT CAPTION";
-            }
-        }
+        const canvas = document.getElementById("shooterCanvas");
+        const ctx = canvas.getContext("2d");
 
-        function nextStoryLine() {
-            storyIdx++;
-            if (storyIdx < storyLines.length) {
-                showCaption();
-            } else {
-                document.getElementById("story-screen").style.display = "none";
-                document.getElementById("game-title").style.display = "block";
-                document.getElementById("main-container").style.display = "flex";
-                initGameEngine();
-            }
-        }
-
-        window.onload = function() { showCaption(); };
-
+        // Web Audio Synth Engine
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playAudioSound(type) {
+        function playGunSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
-            
-            if (type === 'shoot') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(140, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+            if (type === 'fire') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.1);
                 gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-            } else if (type === 'laser') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-                osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-            } else if (type === 'combo') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                osc.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            } else if (type === 'hit') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
             }
         }
 
-        function startThemeMusic() {
-            setInterval(() => {
-                if (!waveInProgess) return;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.type = 'triangle';
-                const notes = [130.81, 146.83, 164.81, 196.00];
-                osc.frequency.setValueAtTime(notes[Math.floor(Math.random() * notes.length)], audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.35);
-            }, 350);
-        }
+        // Gameplay Constants & Arrays
+        let hp = 100, kills = 0, ammo = 30, maxAmmo = 30, currentGun = "M4 Carbine", fireCooldown = 0, reloadTimer = 0;
+        let player = { x: 450, y: 275, size: 18, speed: 4.5, angle: 0 };
+        let bullets = [], enemies = [], crates = [], squadSaved = [];
+        let keys = {}, mouseX = 450, mouseY = 275;
 
-        const canvas = document.getElementById("tdCanvas");
-        const ctx = canvas.getContext("2d");
-
-        let cash = 150, baseHp = 20, maxBaseHp = 20, waveNum = 1;
-        let selectedType = null, selectedCost = 0;
-        let enemies = [], towers = [], projectiles = [], lasers = [], swordSlashes = [], drones = [], activeCombos = [];
-        let enemiesSpawning = 0, waveInProgess = false;
-        let currentMouseX = 0, currentMouseY = 0;
-
-        // FIXED PATH DIRECTION MATH: Reoriented to run Left-to-Right correctly
-        const path = [
-            {x: 10, y: 150}, {x: 230, y: 150}, {x: 230, y: 410}, 
-            {x: 530, y: 410}, {x: 530, y: 250}, {x: 690, y: 250}
+        // Static Rescue Coordinates for the 5 boys
+        const trappedBoys = [
+            { x: 150, y: 120, name: "Aadam", saved: false, color: "#ff0055" },
+            { x: 750, y: 130, name: "Yakoub", saved: false, color: "#ffcc00" },
+            { x: 160, y: 450, name: "Daiyon", saved: false, color: "#9900ff" },
+            { x: 740, y: 460, name: "Arafat", saved: false, color: "#00ff66" },
+            { x: 450, y: 80, name: "Naythan", saved: false, color: "#ff6600" }
         ];
 
-        function initGameEngine() {
-            canvas.addEventListener("mousemove", (e) => {
-                const rect = canvas.getBoundingClientRect();
-                currentMouseX = e.clientX - rect.left;
-                currentMouseY = e.clientY - rect.top;
-            });
-            canvas.addEventListener("mousedown", placeDefenderUnit);
-            setInterval(gameTick, 1000 / 30);
-            startThemeMusic();
-        }
+        // Input Actions Configuration
+        window.addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; if(e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) reloadTimer = 45; });
+        window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+        canvas.addEventListener("mousemove", e => { const rect = canvas.getBoundingClientRect(); mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top; });
+        
+        let isMouseDown = false;
+        canvas.addEventListener("mousedown", () => isMouseDown = true);
+        window.addEventListener("mouseup", () => isMouseDown = false);
 
-        function startWaveCombat() {
-            if (waveInProgess) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            waveInProgess = true;
-            enemiesSpawning = 6 + (waveNum * 4);
-            document.getElementById("play-btn").disabled = true;
-            spawnZombieWave();
-        }
-
-        function selectTowerType(type, cost) {
-            if (cash >= cost) { selectedType = type; selectedCost = cost; document.getElementById("placement-mode").style.display = "block"; }
-        }
-
-        function placeDefenderUnit() {
-            if (!selectedType || isOnRoad(currentMouseX, currentMouseY)) return;
-
-            let range = 100, fireRate = 25, color = "#00ffff", size = 15; 
-            if (selectedType === "shuceeb") { range = 150; fireRate = 4; color = "#ff00ff"; size = 16; } 
-            if (selectedType === "aadam") { range = 130; fireRate = 30; color = "#ff0055"; size = 19; } 
-            if (selectedType === "yakoub") { range = 240; fireRate = 60; color = "#ffffff"; size = 15; } 
-            if (selectedType === "daiyon") { range = 150; fireRate = 10; color = "#9900ff"; size = 15; }
-            if (selectedType === "arafat") { range = 140; fireRate = 15; color = "#00ff66"; size = 16; } 
-            if (selectedType === "naythan") { range = 70; fireRate = 20; color = "#ff6600"; size = 17; } 
-
-            let newTower = { x: currentMouseX, y: currentMouseY, type: selectedType, range: range, fireRate: fireRate, cd: 0, color: color, size: size, clip: 40, reloadTimer: 0 };
-            towers.push(newTower);
-
-            if (selectedType === "aadam") {
-                drones.push({ x: currentMouseX - 20, y: currentMouseY - 20, angle: 0, parent: newTower });
+        function fireActiveWeapon(sx, sy, targetAngle, isAI = false) {
+            if (!isAI) {
+                if (reloadTimer > 0 || fireCooldown > 0) return;
+                if (ammo <= 0) { reloadTimer = 45; return; }
+                ammo--;
             }
+            
+            playGunSound('fire');
+            let bSpeed = 12;
 
-            cash -= selectedCost;
-            selectedType = null;
-            document.getElementById("placement-mode").style.display = "none";
+            if (currentGun === "Remington Shotgun" && !isAI) {
+                bullets.push({ x: sx, y: sy, vx: Math.cos(targetAngle - 0.15) * bSpeed, vy: Math.sin(targetAngle - 0.15) * bSpeed, isAI: isAI });
+                bullets.push({ x: sx, y: sy, vx: Math.cos(targetAngle) * bSpeed, vy: Math.sin(targetAngle) * bSpeed, isAI: isAI });
+                bullets.push({ x: sx, y: sy, vx: Math.cos(targetAngle + 0.15) * bSpeed, vy: Math.sin(targetAngle + 0.15) * bSpeed, isAI: isAI });
+                fireCooldown = 22;
+            } else if (currentGun === "50 Cal Sniper" && !isAI) {
+                bullets.push({ x: sx, y: sy, vx: Math.cos(targetAngle) * 18, vy: Math.sin(targetAngle) * 18, isAI: isAI, pierce: 3 });
+                fireCooldown = 40;
+            } else { // M4 Carbine or AI Support shots
+                bullets.push({ x: sx, y: sy, vx: Math.cos(targetAngle) * 13, vy: Math.sin(targetAngle) * 13, isAI: isAI });
+                fireCooldown = isAI ? 30 : 6;
+            }
             updateUI();
         }
 
-        function isOnRoad(px, py) {
-            if (py >= 115 && py <= 185 && px <= 265) return true;
-            if (px >= 195 && px <= 265 && py >= 115 && py <= 445) return true;
-            if (py >= 375 && py <= 445 && px >= 195 && px <= 565) return true;
-            if (px >= 495 && px <= 565 && py >= 215 && py <= 445) return true;
-            if (py >= 215 && py <= 285 && px >= 495 && px <= 720) return true;
-            return false;
+        function spawnAlienCrawler() {
+            let side = Math.floor(Math.random() * 4);
+            let eX = 0, eY = 0;
+            if(side === 0) { eX = Math.random()*900; eY = -20; }
+            else if(side === 1) { eX = 920; eY = Math.random()*550; }
+            else if(side === 2) { eX = Math.random()*900; eY = 570; }
+            else { eX = -20; eY = Math.random()*550; }
+            enemies.push({ x: eX, y: eY, hp: 2, speed: 2.0 + Math.random() });
+            setTimeout(spawnAlienCrawler, Math.max(400, 1500 - kills * 20));
         }
 
-        function spawnZombieWave() {
-            if (!waveInProgess) return;
-            
-            if ((waveNum === 5 || waveNum === 10) && enemiesSpawning === (6 + (waveNum * 4))) {
-                enemies.push({ 
-                    x: path[0].x, y: path[0].y, pathIndex: 0, 
-                    hp: 150 * (waveNum / 5), maxHp: 150 * (waveNum / 5), 
-                    speed: 0.6, size: 28, color: "#9900ff", type: "boss" 
-                });
-                enemiesSpawning = 0;
-                return;
+        function gameLoop() {
+            // Processing timers
+            if (fireCooldown > 0) fireCooldown--;
+            if (reloadTimer > 0) {
+                reloadTimer--;
+                if (reloadTimer === 0) { ammo = maxAmmo; updateUI(); }
             }
 
-            if (enemiesSpawning > 0) {
-                let eHp = 2 + Math.floor(waveNum * 1.6);
-                let speed = 1.2 + (waveNum * 0.04);
-                let isSpiderAlien = Math.random() < 0.25;
-                enemies.push({ 
-                    x: path[0].x, y: path[0].y, pathIndex: 0, 
-                    hp: isSpiderAlien ? eHp * 0.7 : eHp, maxHp: isSpiderAlien ? eHp * 0.7 : eHp, 
-                    speed: isSpiderAlien ? speed * 1.6 : speed, size: isSpiderAlien ? 10 : 13,
-                    color: isSpiderAlien ? "#ff00ff" : "#00ff00", type: isSpiderAlien ? "spider" : "normal"
-                });
-                enemiesSpawning--;
-                setTimeout(spawnZombieWave, Math.max(400, 1500 - waveNum * 50));
-            }
-        }
+            // Input Movement Controls (WASD keys vector modifiers)
+            if (keys['w'] && player.y > player.size) player.y -= player.speed;
+            if (keys['s'] && player.y < 555 - player.size) player.y += player.speed;
+            if (keys['a'] && player.x > player.size) player.x -= player.speed;
+            if (keys['d'] && player.x < 900 - player.size) player.x += player.speed;
 
-        function gameTick() {
-            if (waveInProgess) {
-                enemies.forEach((e, idx) => {
-                    let target = path[e.pathIndex + 1];
-                    let dist = Math.hypot(target.x - e.x, target.y - e.y);
-                    if (dist > e.speed) { e.x += ((target.x - e.x) / dist) * e.speed; e.y += ((target.y - e.y) / dist) * e.speed; } 
-                    else {
-                        e.pathIndex++;
-                        if (e.pathIndex >= path.length - 1) {
-                            baseHp--; enemies.splice(idx, 1); updateUI();
-                            if (baseHp <= 0) { alert("THE OUTBREAKINI DESTROYED THE SKITTLE CAR! Game Over."); location.reload(); }
-                        }
-                    }
-                });
+            player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+
+            if (isMouseDown) fireActiveWeapon(player.x, player.y, player.angle);
+
+            // Handle Loot Crates Spawning drops logic checkpoints
+            if (Math.random() < 0.003 && crates.length < 3) {
+                const types = ["Remington Shotgun", "50 Cal Sniper"];
+                crates.push({ x: 100 + Math.random()*700, y: 100 + Math.random()*350, type: types[Math.floor(Math.random()*types.length)] });
             }
 
-            lasers.forEach((l, idx) => { l.life--; if(l.life <= 0) lasers.splice(idx, 1); });
-            swordSlashes.forEach((s, idx) => { s.life--; if(s.life <= 0) swordSlashes.splice(idx, 1); });
-            activeCombos.forEach((c, idx) => { c.life--; if(c.life <= 0) activeCombos.splice(idx, 1); });
-
-            drones.forEach(d => {
-                d.angle += 0.08;
-                d.x = d.parent.x + Math.cos(d.angle) * 25;
-                d.y = d.parent.y + Math.sin(d.angle) * 25;
+            // Rescue Boys Verification
+            trappedBoys.forEach(boy => {
+                if (!boy.saved && Math.hypot(player.x - boy.x, player.y - boy.y) < player.size + 15) {
+                    boy.saved = true;
+                    squadSaved.push({ name: boy.name, color: boy.color, cd: 0, x: player.x, y: player.y });
+                    updateUI();
+                }
             });
 
-            let daiyons = towers.filter(t => t.type === "daiyon");
-            let aadams = towers.filter(t => t.type === "aadam");
-            daiyons.forEach(d => {
-                aadams.forEach(a => {
-                    if (Math.hypot(d.x - a.x, d.y - a.y) < 160 && Math.random() < 0.03 && enemies.length > 0) {
-                        playAudioSound('combo');
-                        activeCombos.push({ sx: d.x, sy: d.y, tx: a.x, ty: a.y, life: 8 });
-                        enemies.forEach(e => {
-                            let midX = (d.x + a.x) / 2;
-                            let midY = (d.y + a.y) / 2;
-                            if (Math.hypot(e.x - midX, e.y - midY) < 80) { e.hp -= 3; }
-                        });
-                    }
-                });
-            });
-
-            towers.forEach(t => {
-                if (t.type === "arafat" && t.reloadTimer > 0) { t.reloadTimer--; return; }
-                if (t.cd > 0) t.cd--;
+            // Handle Companion AI Followers Combat loops tracking targets
+            squadSaved.forEach((follower, index) => {
+                let leaderX = index === 0 ? player.x : squadSaved[index - 1].x;
+                let leaderY = index === 0 ? player.y : squadSaved[index - 1].y;
+                let d = Math.hypot(leaderX - follower.x, leaderY - follower.y);
                 
-                if (t.cd === 0 && enemies.length > 0) {
-                    let targetEnemy = null, closestDist = t.range;
+                if (d > 35) {
+                    follower.x += ((leaderX - follower.x) / d) * 4.0;
+                    follower.y += ((leaderY - follower.y) / d) * 4.0;
+                }
+
+                if (follower.cd > 0) follower.cd--;
+                if (follower.cd === 0 && enemies.length > 0) {
+                    let nearestE = enemies[0];
+                    let closestD = Math.hypot(nearestE.x - follower.x, nearestE.y - follower.y);
                     enemies.forEach(e => {
-                        let d = Math.hypot(e.x - t.x, e.y - t.y);
-                        if (d < closestDist) { closestDist = d; targetEnemy = e; }
+                        let currentD = Math.hypot(e.x - follower.x, e.y - follower.y);
+                        if(currentD < closestD) { closestD = currentD; nearestE = e; }
                     });
-                    
-                    if (targetEnemy) {
-                        if (t.type === "yakoub") {
-                            playAudioSound('laser');
-                            lasers.push({ sx: t.x, sy: t.y, tx: targetEnemy.x, ty: targetEnemy.y, life: 10 });
-                            targetEnemy.hp -= 8;
-                            t.cd = t.fireRate;
-                        } 
-                        else if (t.type === "arafat") {
-                            t.clip--; playAudioSound('shoot');
-                            projectiles.push({ x: t.x, y: t.y, tx: targetEnemy.x, ty: targetEnemy.y, speed: 16, target: targetEnemy, dmg: 1.0, color: t.color, type: t.type });
-                            if (t.clip <= 0) { t.reloadTimer = 688; t.clip = 40; } else { t.cd = t.fireRate; }
-                        }
-                        else if (t.type === "naythan") {
-                            swordSlashes.push({ x: t.x, y: t.y, range: t.range, life: 6 });
-                            enemies.forEach(e => { if (Math.hypot(e.x - t.x, e.y - t.y) < t.range + 10) e.hp -= 6.0; });
-                            t.cd = t.fireRate;
-                        }
-                        else if (t.type === "aadam") {
-                            playAudioSound('shoot');
-                            let droneAnchor = drones.find(dr => dr.parent === t);
-                            let sx = droneAnchor ? droneAnchor.x : t.x;
-                            let sy = droneAnchor ? droneAnchor.y : t.y;
-                            projectiles.push({ x: sx, y: sy, tx: targetEnemy.x, ty: targetEnemy.y, speed: 14, target: targetEnemy, dmg: 4.5, color: "#fff", type: t.type });
-                            t.cd = t.fireRate;
-                        }
-                        else {
-                            let dmg = t.type === "shuceeb" ? 8.0 : 4.25;
-                            playAudioSound('shoot');
-                            let bulletColors = ["#ff0000", "#ffcc00", "#00ff00", "#00ffff", "#ff00ff"];
-                            let chosenColor = t.type === "shuceeb" ? bulletColors[Math.floor(Math.random()*bulletColors.length)] : t.color;
-                            projectiles.push({ x: t.x, y: t.y, tx: targetEnemy.x, ty: targetEnemy.y, speed: 18, target: targetEnemy, dmg: dmg, color: chosenColor, type: t.type });
-                            t.cd = t.fireRate;
-                        }
+                    if (closestD < 250) {
+                        let eAngle = Math.atan2(nearestE.y - follower.y, nearestE.x - follower.x);
+                        fireWeapon(follower.x, follower.y, eAngle, true);
+                        follower.cd = 30;
                     }
                 }
             });
 
-            projectiles.forEach((p, idx) => {
-                let d = Math.hypot(p.target.x - p.x, p.target.y - p.y);
-                if (d > p.speed) { p.x += ((p.target.x - p.x) / d) * p.speed; p.y += ((p.target.y - p.y) / d) * p.speed; } 
-                else {
-                    let impactDmg = p.dmg;
-                    if (p.type === "shuceeb") {
-                        enemies.forEach(e => { if (Math.hypot(e.x - p.x, e.y - p.y) < 40) e.hp -= 2.0; });
+            // Projectile Physics Translators
+            bullets.forEach((b, bIdx) => {
+                b.x += b.vx; b.y += b.vy;
+                if (b.x < 0 || b.x > 900 || b.y < 0 || b.y > 550) bullets.splice(bIdx, 1);
+
+                enemies.forEach((e, eIdx) => {
+                    if (Math.hypot(b.x - e.x, b.y - e.y) < 18) {
+                        e.hp--; playSound('hit');
+                        if (!b.pierce) bullets.splice(bIdx, 1);
+                        else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
+
+                        if (e.hp <= 0) { enemies.splice(eIdx, 1); kills++; updateUI(); }
                     }
-                    p.target.hp -= impactDmg; projectiles.splice(idx, 1);
+                });
+            });
+
+            // Alien Chasing AI Navigation loop properties
+            enemies.forEach((e, idx) => {
+                let eAngle = Math.atan2(player.y - e.y, player.x - e.x);
+                e.x += Math.cos(eAngle) * e.speed; e.y += Math.sin(eAngle) * e.speed;
+
+                if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + 10) {
+                    hp -= 0.4; updateUI();
+                    if (hp <= 0) { alert("TACTICAL DEFEAT! Shuceeb was overwhelmed."); location.reload(); }
                 }
             });
 
-            enemies.forEach((e, idx) => { if (e.hp <= 0) { enemies.splice(idx, 1); cash += e.type === "boss" ? 100 : 15; updateUI(); } });
-
-            if (waveInProgess && enemiesSpawning === 0 && enemies.length === 0) {
-                waveInProgess = false; waveNum++; document.getElementById("play-btn").disabled = false; updateUI();
-            }
-
-            // RENDERING LAYOUT ENGINE
-            ctx.clearRect(0, 0, 800, 550);
-
-            // Path Road Terrain
-            ctx.strokeStyle = "#333"; ctx.lineWidth = 44; ctx.lineCap = "round"; ctx.lineJoin = "round";
-            ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
-            for(let i=1; i<path.length; i++) ctx.lineTo(path[i].x, path[i].y); ctx.stroke();
-
-            // RED PORTAL OUTBREAK GATEWAY MARKER
-            ctx.fillStyle = "#ff3300"; ctx.fillRect(0, 125, 25, 50);
-            ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 3; ctx.strokeRect(0, 125, 25, 50);
-
-            // Skittle Car Base Frame Target Position
-            ctx.fillStyle = "#ff00ff"; ctx.fillRect(690, 225, 55, 30);
-            ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(705, 258, 6, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(730, 258, 6, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = "#fff"; ctx.font = "bold 9px Arial"; ctx.fillText("SKITTLES", 694, 244);
-
-            activeCombos.forEach(c => {
-                ctx.strokeStyle = "rgba(0, 255, 255, " + (c.life / 8) + ")"; ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.moveTo(c.sx, c.sy); ctx.lineTo(c.tx, c.ty); ctx.stroke();
+            // Scavenge verification loop check
+            crates.forEach((c, idx) => {
+                if (Math.hypot(player.x - c.x, player.y - c.y) < player.size + 15) {
+                    currentGun = c.type; maxAmmo = c.type === "50 Cal Sniper" ? 5 : 8; ammo = maxAmmo;
+                    crates.splice(idx, 1); updateUI();
+                }
             });
 
-            drones.forEach(d => { ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(d.x, d.y, 4, 0, Math.PI*2); ctx.fill(); });
+            // RENDERING LOOPS
+            ctx.clearRect(0, 0, 900, 550);
 
-            towers.forEach(t => {
-                ctx.fillStyle = t.color; ctx.beginPath(); ctx.arc(t.x, t.y, t.size, 0, Math.PI*2); ctx.fill();
-                ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
-                ctx.fillStyle = "#000"; ctx.font = "bold 10px Arial"; ctx.fillText(t.type.substring(0,2).toUpperCase(), t.x-6, t.y+4);
-                if (t.type === "arafat" && t.reloadTimer > 0) { ctx.fillStyle = "red"; ctx.font = "9px Arial"; ctx.fillText("RELOAD", t.x-16, t.y-22); }
+            // Draw Background Grids Tactical Grid Floor Map
+            ctx.strokeStyle = "#162016"; ctx.lineWidth = 1;
+            for(let i=0; i<900; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,550); ctx.stroke(); }
+            for(let j=0; j<550; j+=50) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(900,j); ctx.stroke(); }
+
+            // Draw Loot Weapons Crates
+            crates.forEach(c => {
+                ctx.fillStyle = "#00ffff"; ctx.fillRect(c.x-10, c.y-10, 20, 20);
+                ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.strokeRect(c.x-10, c.y-10, 20, 20);
+                ctx.fillStyle = "#fff"; ctx.font = "9px Arial"; ctx.fillText("CRATE", c.x-14, c.y-14);
             });
 
-            lasers.forEach(l => {
-                ctx.strokeStyle = "rgba(255, 255, 255, " + (l.life / 10) + ")"; ctx.lineWidth = 8;
-                ctx.beginPath(); ctx.moveTo(l.sx, l.sy); ctx.lineTo(l.tx, l.ty); ctx.stroke();
+            // Draw Trapped Boys Nodes (Waiting Rescue positions)
+            trappedBoys.forEach(boy => {
+                if (!boy.saved) {
+                    ctx.fillStyle = boy.color; ctx.beginPath(); ctx.arc(boy.x, boy.y, 14, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.fillStyle = "#fff"; ctx.font = "bold 10px Arial"; ctx.fillText(boy.name[0], boy.x-3, boy.y+4);
+                }
             });
 
-            swordSlashes.forEach(s => { ctx.strokeStyle = "rgba(255, 102, 0, 0.4)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(s.x, s.y, s.range, 0, Math.PI*2); ctx.stroke(); });
+            // Render Companions Followers Lines
+            squadSaved.forEach(f => {
+                ctx.fillStyle = f.color; ctx.beginPath(); ctx.arc(f.x, f.y, 15, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.stroke();
+            });
 
-            if (selectedType) { ctx.strokeStyle = "rgba(255, 0, 255, 0.25)"; ctx.lineWidth = 2; ctx.beginPath(); let r = selectedType === "shuceeb" ? 150 : 110; ctx.arc(currentMouseX, currentMouseY, r, 0, Math.PI*2); ctx.stroke(); }
+            // PLAYER MODEL OPERATOR BODY (Top-Down POV setup structure)
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+            ctx.fillStyle = "#444"; ctx.fillRect(6, -4, 26, 6); // Weapon Rifle Barrel frame length
+            ctx.fillStyle = "#ff00ff"; // Shuceeb Operator Signature deep magenta profile
+            ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI*2); ctx.fill();
+            ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
+            ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, 0, player.size*0.5, 0, Math.PI*2); ctx.fill(); // Head circle
+            ctx.restore();
 
+            // Draw Projectiles
+            bullets.forEach(b => { ctx.fillStyle = currentGun === "50 Cal Sniper" ? "#ffcc00" : "#00ffff"; ctx.fillRect(b.x-2, b.y-2, 5, 5); });
+
+            // Draw Alien Spiders
             enemies.forEach(e => {
-                if (e.type === "spider") {
-                    ctx.fillStyle = "#ff00ff";
-                    ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
-                    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
-                    ctx.beginPath(); ctx.moveTo(e.x-12, e.y-4); ctx.lineTo(e.x+12, e.y+4); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(e.x-12, e.y+4); ctx.lineTo(e.x+12, e.y-4); ctx.stroke();
-                } else {
-                    ctx.fillStyle = e.color;
-                    ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
-                    ctx.fillStyle = "#000000";
-                    ctx.fillRect(e.x-4, e.y-4, 3, 3); ctx.fillRect(e.x+2, e.y-4, 3, 3);
-                }
-                
-                ctx.fillStyle = "red"; ctx.fillRect(e.x - 12, e.y - 18, 24, 3.5);
-                ctx.fillStyle = "green"; ctx.fillRect(e.x - 12, e.y - 18, (e.hp / e.maxHp) * 24, 3.5);
+                ctx.fillStyle = "#39e639"; ctx.beginPath(); ctx.arc(e.x, e.y, 12, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#000"; ctx.fillRect(e.x-3, e.y-3, 2, 2); ctx.fillRect(e.x+2, e.y-3, 2, 2); // Alien facial elements
             });
 
-            projectiles.forEach(p => {
-                ctx.fillStyle = p.color;
-                if (p.type === "shuceeb") { ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2); ctx.fill(); } 
-                else { ctx.fillRect(p.x - 2, p.y - 2, 5, 5); }
-            });
+            requestAnimationFrame(gameLoop);
         }
 
         function updateUI() {
-            document.getElementById("ui-wave").innerText = waveNum;
-            document.getElementById("ui-hp-fill").style.width = (baseHp / maxBaseHp) * 100 + "%";
-            document.getElementById("ui-cash").innerText = cash;
-            document.getElementById("btn-shuceeb").disabled = cash < 50; 
-            document.getElementById("btn-aadam").disabled = cash < 125;
-            document.getElementById("btn-yakoub").disabled = cash < 175;
-            document.getElementById("btn-daiyon").disabled = cash < 150;
-            document.getElementById("btn-arafat").disabled = cash < 200;
-            document.getElementById("btn-naythan").disabled = cash < 250;
+            document.getElementById("ui-hp").innerText = Math.floor(hp) + "/100";
+            document.getElementById("ui-weapon").innerText = currentGun;
+            document.getElementById("ui-ammo").innerText = reloadTimer > 0 ? "RELOADING" : `${ammo}/${maxAmmo}`;
+            document.getElementById("ui-kills").innerText = kills;
+            document.getElementById("ui-squad").innerText = `${squadSaved.length}/5`;
         }
+
+        // Initialize Call of Duty 2D Engine Grid Simulation Loop
+        spawnAlienCrawler();
+        requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
