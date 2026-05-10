@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>The Skittlini&Zombini | 2D Action Arena</title>
+    <title>The Skittlini Zombini Or Alienili | 2D Action Arena</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
@@ -16,7 +16,6 @@
         .next-btn { background: #ff00ff; color: #fff; border: none; padding: 12px 30px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 0 10px #ff00ff; text-transform: uppercase; }
         .next-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
         
-        /* Voice Engine Toggle Button */
         .voice-btn { background: #00ff00; color: black; border: none; padding: 10px 20px; font-size: 14px; cursor: pointer; font-weight: bold; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 0 10px #00ff00; text-transform: uppercase; }
         .voice-btn:hover { background: white; box-shadow: 0 0 15px white; }
         
@@ -32,7 +31,7 @@
 </head>
 <body>
 
-    <!-- INSTANT CAPTION SCREEN WITH ACTIVE NARRATOR BUTTON -->
+    <!-- INSTANT CAPTION SCREEN -->
     <div id="story-screen" class="screen">
         <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px; margin-top: 0;">🍬 THE SKITTLINI ZOMBINI OR ALIENILI 🍬</h2>
         <button id="v-toggle" class="voice-btn" onclick="activateVoiceEngine()">📢 ENABLE VOICE ANNOUNCER</button>
@@ -96,19 +95,12 @@
         let storyIdx = 0;
         let voiceEnabled = false;
 
-        // MANUALLY CLICK TO UNLOCK BROWSER SPEECH SYNTHESIS PERMISSIONS LOCK
         function activateVoiceEngine() {
             voiceEnabled = true;
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // UI Button feedback confirmation update
             let vBtn = document.getElementById("v-toggle");
             vBtn.innerText = "📢 AI ANNOUNCER ONLINE";
-            vBtn.style.background = "#ff00ff";
-            vBtn.style.color = "white";
-            vBtn.style.boxShadow = "0 0 15px #ff00ff";
-            
-            // Proactively test trigger speech reading out current baseline index line
+            vBtn.style.background = "#ff00ff"; vBtn.style.color = "white"; vBtn.style.boxShadow = "0 0 15px #ff00ff";
             speakCaptionText(storyLines[storyIdx]);
         }
 
@@ -191,7 +183,7 @@
             "[MUTANT SPORES LOCKING ENEMY TRAILING MATRIX]",
             "[LEFT SPAWN GATE ACTIVE: SPRINTING THREAT INBOUND]",
             "[SKITTLINI MATRIX ENERGY FIELD RECHARGING]",
-            "[ALERT: HIGH VELOCITY BIO-THREAT SPOTTED LEFT]"
+            "[ALERT: HIGH DENSITY BIO-THREAT SPOTTED LEFT]"
         ];
         let colorIdx = 0;
 
@@ -324,8 +316,25 @@
         function spawnZombie() {
             if (canvas.style.display !== "block") return;
             if (!bossActive) {
-                let eX = -20; 
-                enemies.push({ x: eX, y: groundY - 12, hp: 1 + Math.floor(roundNum * 0.4), speed: 3.7 + (roundNum * 0.25) });
+                let eX = -20;
+                let alienType = "normal";
+                let alienColor = "#39e639";
+                let bounty = 15;
+                let hpValue = 1 + Math.floor(roundNum * 0.4);
+
+                // DYNAMIC LEVEL MUTATION ARCHETYPE
+                if (roundNum >= 30) {
+                    alienType = "purple"; alienColor = "#bc00dd"; bounty = 120; hpValue *= 2.5;
+                } else if (roundNum >= 20) {
+                    alienType = "blue"; alienColor = "#0055ff"; bounty = 60; hpValue *= 1.8;
+                } else if (roundNum >= 10) {
+                    // 83.5% chance to roll an orange alien instead of green baseline
+                    if (Math.random() < 0.835) {
+                        alienType = "orange"; alienColor = "#ff7700"; bounty = 30; hpValue *= 1.4;
+                    }
+                }
+
+                enemies.push({ x: eX, y: groundY - 12, hp: hpValue, maxHp: hpValue, speed: 3.7 + (roundNum * 0.25), color: alienColor, reward: bounty });
             }
             setTimeout(spawnZombie, Math.max(350, 1800 - roundNum * 100));
         }
@@ -360,7 +369,11 @@
                     if (Math.hypot(b.x - e.x, b.y - e.y) < 16) {
                         e.hp -= b.dmg; playSound('hit');
                         if(!b.pierce) bullets.splice(bIdx, 1); else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
-                        if (e.hp <= 0) { enemies.splice(eIdx, 1); kills++; cash += 15; updateUI(); }
+                        if (e.hp <= 0) { 
+                            enemies.splice(eIdx, 1); kills++; 
+                            cash += e.reward; // Grants your exact custom bounty reward based on monster type
+                            updateUI(); 
+                        }
                     }
                 });
 
@@ -369,7 +382,7 @@
                         boss.hp -= b.dmg; playSound('hit');
                         if(!b.pierce) bullets.splice(bIdx, 1); else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
                         if (boss.hp <= 0) {
-                            bosses.splice(bossIdx, 1); kills++; cash += 100; bossActive = false; updateUI();
+                            bosses.splice(bossIdx, 1); kills++; cash += 250; bossActive = false; updateUI();
                             document.getElementById("caption-ticker").innerText = "[OVERLORD ELIMINATED: THREAT CLEARED]";
                             speakCaptionText("Target neutralized.");
                         }
@@ -415,7 +428,7 @@
             bullets.forEach(b => { ctx.fillStyle = b.color; ctx.fillRect(b.x - Math.floor(b.size/2), b.y - Math.floor(b.size/2), b.size, b.size); });
 
             enemies.forEach(e => {
-                ctx.fillStyle = "#39e639"; ctx.beginPath(); ctx.arc(e.x, e.y, 11, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, 11, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = "red"; ctx.fillRect(e.x-3, e.y-4, 2, 2); ctx.fillRect(e.x+2, e.y-4, 2, 2);
             });
 
@@ -433,11 +446,4 @@
             document.getElementById("ui-round").innerText = roundNum;
             document.getElementById("ui-cash").innerText = `$${cash}`;
             document.getElementById("ui-ammo").innerText = reloadTimer > 0 ? "RELOADING" : `${ammo}/${maxAmmo}`;
-            document.getElementById("ui-kills").innerText = kills;
-            document.getElementById("buy-btn").innerText = `UPGRADE GUN LEVEL ($${cost})`;
-            document.getElementById("buy-btn").disabled = cash < cost;
-            document.getElementById("ammo-btn").disabled = cash < ammoCost || ammo === maxAmmo;
-        }
-    </script>
-</body>
-</html>
+            document.getElementById("
