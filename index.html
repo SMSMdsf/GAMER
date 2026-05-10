@@ -5,8 +5,10 @@
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
-        canvas { background: #111411; border: 4px solid #333; cursor: crosshair; display: block; margin: 20px auto; box-shadow: 0 0 30px rgba(0,255,0,0.15); }
+        canvas { background: #111411; border: 4px solid #333; cursor: crosshair; display: block; margin: 10px auto; box-shadow: 0 0 30px rgba(0,255,0,0.15); transition: background-color 1.5s ease; }
         .badge { color: #ffff00; text-shadow: 0 0 8px #ffff00; }
+        /* Movie Captions Styling Layout */
+        #caption-ticker { font-size: 20px; font-weight: bold; text-transform: uppercase; margin-top: 5px; height: 30px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -21,7 +23,10 @@
     </div>
 
     <!-- SIDE-SCROLLING CANVAS -->
-    <canvas id="gameCanvas" width="900" height="500"></canvas>
+    <canvas id="gameCanvas" width="900" height="460"></canvas>
+
+    <!-- LIVE ACTION CAPTIONS FEED -->
+    <div id="caption-ticker" style="color: #ff00ff; text-shadow: 0 0 8px #ff00ff;">[TACTICAL DEPLOYMENT SUCCESSFUL: PREPARE FOR COMBAT]</div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -48,14 +53,41 @@
 
         // Engine Configuration Variables
         let hp = 100, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0;
-        let player = { x: 450, y: 400, vx: 0, vy: 0, size: 18, speed: 5, jumpPower: 12, grounded: true, angle: 0 };
+        let player = { x: 450, y: 360, vx: 0, vy: 0, size: 18, speed: 5, jumpPower: 12, grounded: true, angle: 0 };
         let bullets = [], enemies = [], keys = {}, mouseX = 450, mouseY = 250;
-        const gravity = 0.5, groundY = 430;
+        const gravity = 0.5, groundY = 390;
+
+        // Background Color Rotation Array
+        const bgColors = ["#111411", "#1a0b1a", "#0b151a", "#1a160b", "#1a0b0b"];
+        const gridColors = ["#00ff00", "#ff00ff", "#00ffff", "#ffff00", "#ff0000"];
+        const loopCaptions = [
+            "[GRID DETECTING ALIEN ACTIVITY: SHIFTING POLARITY]",
+            "[MUTANT SPORES MUTATING COMPRESSION MATRIX]",
+            "[TACTICAL RADAR SCANNING INTENSIVE HOSTILE WAVE]",
+            "[SKITTLINI MATRIX ENERGY FIELD RECHARGING]",
+            "[ALERT: HIGH DENSITY BIO-THREAT APPROACHING]"
+        ];
+        let colorIdx = 0;
+
+        // Dynamic 1.5s Environment Ticker (1500 milliseconds)
+        setInterval(() => {
+            colorIdx = (colorIdx + 1) % bgColors.length;
+            canvas.style.backgroundColor = bgColors[colorIdx];
+            
+            // Sync current subtitle feed to match background rotation environment
+            let ticker = document.getElementById("caption-ticker");
+            ticker.style.color = gridColors[colorIdx];
+            ticker.style.textShadow = `0 0 8px ${gridColors[colorIdx]}`;
+            ticker.innerText = loopCaptions[colorIdx];
+        }, 1500);
 
         // Input Setup
         window.addEventListener("keydown", e => {
             keys[e.key.toLowerCase()] = true;
-            if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) reloadTimer = 40;
+            if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) {
+                reloadTimer = 40;
+                document.getElementById("caption-ticker").innerText = "[TACTICAL MAGAZINE RELOAD SEQUENCE INITIATED]";
+            }
         });
         window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
         canvas.addEventListener("mousemove", e => {
@@ -76,7 +108,7 @@
             playSound('shoot');
             let bAngle = Math.atan2(mouseY - player.y, mouseX - player.x);
             bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 14, vy: Math.sin(bAngle) * 14 });
-            fireCooldown = 5; // Fast tactical stream
+            fireCooldown = 5; 
             updateUI();
         }
 
@@ -88,28 +120,25 @@
         }
 
         function gameLoop() {
-            // Process Cooldown States
             if (fireCooldown > 0) fireCooldown--;
             if (reloadTimer > 0) {
                 reloadTimer--;
                 if (reloadTimer === 0) { ammo = maxAmmo; updateUI(); }
             }
 
-            // Keyboard Platform Physics Processing
             player.vx = 0;
             if (keys['a']) player.vx = -player.speed;
             if (keys['d']) player.vx = player.speed;
             if (keys['w'] && player.grounded) {
                 player.vy = -player.jumpPower;
                 player.grounded = false;
+                document.getElementById("caption-ticker").innerText = "[LEAPING ENGAGEMENT: TAKING VERTICAL ADVANTAGE]";
             }
 
-            // Apply Environmental Forces
             player.vy += gravity;
             player.x += player.vx;
             player.y += player.vy;
 
-            // Restrict Boundaries to Floor Baseline
             if (player.y >= groundY - player.size) {
                 player.y = groundY - player.size;
                 player.vy = 0;
@@ -122,7 +151,6 @@
 
             if (isMouseDown) fireWeapon();
 
-            // Translate Bullets Vector coordinates
             bullets.forEach((b, bIdx) => {
                 b.x += b.vx; b.y += b.vy;
                 if (b.x < 0 || b.x > 900 || b.y < 0 || b.y > 500) bullets.splice(bIdx, 1);
@@ -134,17 +162,18 @@
                         if (e.hp <= 0) {
                             enemies.splice(eIdx, 1);
                             kills++;
-                            if (kills % 15 === 0) { roundNum++; } // Dynamic wave escalation
+                            if (kills % 15 === 0) { 
+                                roundNum++; 
+                                document.getElementById("caption-ticker").innerText = `[THREAT LEVEL ESCALATED: ENEMY STRENGTH MULTIPLIED]`;
+                            } 
                             updateUI();
                         }
                     }
                 });
             });
 
-            // Enemy Physics Translation
             enemies.forEach((e, idx) => {
                 e.x += e.speed;
-                // If enemy passes screen borders or switches directions tracking player location
                 if (Math.random() < 0.01) {
                     e.speed = (player.x > e.x ? 1 : -1) * Math.abs(e.speed);
                 }
@@ -155,37 +184,40 @@
                 }
             });
 
-            // RENDER FRAME GRAPHICS
+            // RENDER FRAME GRAPHICS WITH CYCLING GRID COLORS
             ctx.clearRect(0, 0, 900, 500);
 
-            // Draw Steel Ground Floor Base
-            ctx.fillStyle = "#222"; ctx.fillRect(0, groundY, 900, 70);
-            ctx.strokeStyle = "#00ff00"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(900, groundY); ctx.stroke();
+            // Draw Matrix Grid Lines
+            ctx.strokeStyle = gridColors[colorIdx] + "22"; 
+            ctx.lineWidth = 1;
+            for(let i=0; i<900; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,groundY); ctx.stroke(); }
+            for(let j=0; j<groundY; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(900,j); ctx.stroke(); }
 
-            // PLAYER MODEL DESIGN (Side view arm rotation assembly tracking mouse)
+            // Draw Steel Floor Base
+            ctx.fillStyle = "#151515"; ctx.fillRect(0, groundY, 900, 70);
+            ctx.strokeStyle = gridColors[colorIdx]; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(900, groundY); ctx.stroke();
+
+            // PLAYER MODEL DESIGN
             ctx.save();
             ctx.translate(player.x, player.y);
             
-            // Render Rotating Target Gun Barrel weapon link
             ctx.save();
             ctx.rotate(player.angle);
             ctx.fillStyle = "#555"; ctx.fillRect(0, -3, 24, 6);
             ctx.restore();
 
-            // Head and Body profiles
             ctx.fillStyle = "#ff00ff"; ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
             ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, -6, player.size * 0.4, 0, Math.PI*2); ctx.fill();
             ctx.restore();
 
             // Draw Bullets Lasers Particles
-            ctx.fillStyle = "#00ffff";
+            ctx.fillStyle = gridColors[colorIdx]; 
             bullets.forEach(b => ctx.fillRect(b.x - 2, b.y - 2, 5, 5));
 
             // Draw Running Alien Spiders
             enemies.forEach(e => {
                 ctx.fillStyle = "#39e639"; ctx.beginPath(); ctx.arc(e.x, e.y, 11, 0, Math.PI*2); ctx.fill();
-                // Draw quick spider eyes
                 ctx.fillStyle = "red"; ctx.fillRect(e.x-3, e.y-4, 2, 2); ctx.fillRect(e.x+2, e.y-4, 2, 2);
             });
         }
@@ -197,7 +229,6 @@
             document.getElementById("ui-kills").innerText = kills;
         }
 
-        // Launch Game loops timers
         spawnZombie();
         setInterval(gameLoop, 1000 / 30);
     </script>
