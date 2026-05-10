@@ -4,12 +4,38 @@
     <title>Skittlini: Black Ops | 2D Tactical Shooter</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
-        #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
-        canvas { background: #111411; border: 4px solid #222; cursor: crosshair; display: block; margin: 20px auto; box-shadow: 0 0 30px rgba(0,255,0,0.1); }
+        #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
+        canvas { background: #111411; border: 4px solid #222; cursor: crosshair; display: none; margin: 20px auto; box-shadow: 0 0 30px rgba(0,255,0,0.1); }
         .badge { color: #ffff00; text-shadow: 0 0 8px #ffff00; }
+        
+        /* Tactical Briefing Layout */
+        .screen { padding: 40px; max-width: 750px; margin: auto; height: 90vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .briefing-box { background: #111411; border: 2px solid #00ff00; padding: 25px; text-align: left; line-height: 1.6; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        .deploy-btn { background: #00ff00; color: #000; border: none; padding: 12px 30px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 25px; text-transform: uppercase; box-shadow: 0 0 15px #00ff00; }
+        .deploy-btn:hover { background: #fff; box-shadow: 0 0 20px #fff; }
+        h2 { color: #ff00ff; text-shadow: 0 0 8px #ff00ff; margin-top: 0; }
     </style>
 </head>
 <body>
+
+    <!-- TACTICAL BRIEFING & INSTRUCTIONS SCREEN -->
+    <div id="briefing-screen" class="screen">
+        <div class="briefing-box">
+            <h2>🚨 OPERATION: SKITTLINI BLACK OPS 🚨</h2>
+            <p><strong>THE SITUATION:</strong> Following the chaotic events of the Skittlini Outbreakini, your friend group got split up and trapped deep inside a hostile alien-infested hot zone. The mutant crawlers are multiplying rapidly!</p>
+            <p><strong>YOUR MISSION:</strong> You are Operator Shuceeb. You must deploy solo into the grid, hunt down the invading creatures, and locate your 5 trapped companions to form the ultimate rolling firing squad.</p>
+            <hr style="border: 1px solid #00ff00; margin: 15px 0;">
+            <h3 style="color: #00ffff; margin-top: 0;">⌨️ TACTICAL CONTROLS:</h3>
+            <ul style="list-style-type: square; margin-bottom: 0;">
+                <li><strong>W, A, S, D</strong> - Move through the battlefield map</li>
+                <li><strong>MOUSE CURSOR</strong> - Aim your weapon crosshair 360 degrees</li>
+                <li><strong>LEFT MOUSE CLICK</strong> - Hold down to spray ammo ammunition</li>
+                <li><strong>R KEY</strong> - Trigger manual magazine reload sequence</li>
+                <li><strong>CYAN CRATES</strong> - Run over glowing weapon drops to unlock the Remington Shotgun or .50 Cal Sniper</li>
+            </ul>
+        </div>
+        <button class="deploy-btn" onclick="deployOperator()">DEPLOY TO GROUND ZONE</button>
+    </div>
 
     <!-- HUD DASHBOARD -->
     <div id="ui-box">
@@ -53,7 +79,6 @@
         let bullets = [], enemies = [], crates = [], squadSaved = [];
         let keys = {}, mouseX = 450, mouseY = 275;
 
-        // Static Rescue Coordinates for the 5 boys
         const trappedBoys = [
             { x: 150, y: 120, name: "Aadam", saved: false, color: "#ff0055" },
             { x: 750, y: 130, name: "Yakoub", saved: false, color: "#ffcc00" },
@@ -62,14 +87,33 @@
             { x: 450, y: 80, name: "Naythan", saved: false, color: "#ff6600" }
         ];
 
-        // Input Actions Configuration
-        window.addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; if(e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) reloadTimer = 45; });
-        window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-        canvas.addEventListener("mousemove", e => { const rect = canvas.getBoundingClientRect(); mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top; });
-        
+        function deployOperator() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            document.getElementById("briefing-screen").style.display = "none";
+            document.getElementById("ui-box").style.display = "flex";
+            canvas.style.display = "block";
+            
+            // Register Listeners and Run Engine Loops
+            window.addEventListener("keydown", e => { 
+                keys[e.key.toLowerCase()] = true; 
+                if(e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) reloadTimer = 45; 
+            });
+            window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+            
+            canvas.addEventListener("mousemove", e => { 
+                const rect = canvas.getBoundingClientRect(); 
+                mouseX = e.clientX - rect.left; 
+                mouseY = e.clientY - rect.top; 
+            });
+            
+            window.addEventListener("mousedown", () => isMouseDown = true);
+            window.addEventListener("mouseup", () => isMouseDown = false);
+
+            spawnAlienCrawler();
+            requestAnimationFrame(gameLoop);
+        }
+
         let isMouseDown = false;
-        canvas.addEventListener("mousedown", () => isMouseDown = true);
-        window.addEventListener("mouseup", () => isMouseDown = false);
 
         function fireActiveWeapon(sx, sy, targetAngle, isAI = false) {
             if (!isAI) {
@@ -89,14 +133,15 @@
             } else if (currentGun === "50 Cal Sniper" && !isAI) {
                 bullets.push({ x: sx, y: sy, vx: Math.cos(targetAngle) * 18, vy: Math.sin(targetAngle) * 18, isAI: isAI, pierce: 3 });
                 fireCooldown = 40;
-            } else { // M4 Carbine or AI Support shots
+            } else { 
                 bullets.push({ x: sx, y: sy, vx: Math.cos(targetAngle) * 13, vy: Math.sin(targetAngle) * 13, isAI: isAI });
-                fireCooldown = isAI ? 30 : 6;
+                if (!isAI) fireCooldown = 6;
             }
             updateUI();
         }
 
         function spawnAlienCrawler() {
+            if (canvas.style.display !== "block") return;
             let side = Math.floor(Math.random() * 4);
             let eX = 0, eY = 0;
             if(side === 0) { eX = Math.random()*900; eY = -20; }
@@ -108,16 +153,16 @@
         }
 
         function gameLoop() {
-            // Processing timers
+            if (canvas.style.display !== "block") return;
+
             if (fireCooldown > 0) fireCooldown--;
             if (reloadTimer > 0) {
                 reloadTimer--;
                 if (reloadTimer === 0) { ammo = maxAmmo; updateUI(); }
             }
 
-            // Input Movement Controls (WASD keys vector modifiers)
             if (keys['w'] && player.y > player.size) player.y -= player.speed;
-            if (keys['s'] && player.y < 555 - player.size) player.y += player.speed;
+            if (keys['s'] && player.y < 550 - player.size) player.y += player.speed;
             if (keys['a'] && player.x > player.size) player.x -= player.speed;
             if (keys['d'] && player.x < 900 - player.size) player.x += player.speed;
 
@@ -125,13 +170,11 @@
 
             if (isMouseDown) fireActiveWeapon(player.x, player.y, player.angle);
 
-            // Handle Loot Crates Spawning drops logic checkpoints
             if (Math.random() < 0.003 && crates.length < 3) {
                 const types = ["Remington Shotgun", "50 Cal Sniper"];
                 crates.push({ x: 100 + Math.random()*700, y: 100 + Math.random()*350, type: types[Math.floor(Math.random()*types.length)] });
             }
 
-            // Rescue Boys Verification
             trappedBoys.forEach(boy => {
                 if (!boy.saved && Math.hypot(player.x - boy.x, player.y - boy.y) < player.size + 15) {
                     boy.saved = true;
@@ -140,7 +183,6 @@
                 }
             });
 
-            // Handle Companion AI Followers Combat loops tracking targets
             squadSaved.forEach((follower, index) => {
                 let leaderX = index === 0 ? player.x : squadSaved[index - 1].x;
                 let leaderY = index === 0 ? player.y : squadSaved[index - 1].y;
@@ -153,7 +195,7 @@
 
                 if (follower.cd > 0) follower.cd--;
                 if (follower.cd === 0 && enemies.length > 0) {
-                    let nearestE = enemies[0];
+                    let nearestE = enemies;
                     let closestD = Math.hypot(nearestE.x - follower.x, nearestE.y - follower.y);
                     enemies.forEach(e => {
                         let currentD = Math.hypot(e.x - follower.x, e.y - follower.y);
@@ -161,20 +203,19 @@
                     });
                     if (closestD < 250) {
                         let eAngle = Math.atan2(nearestE.y - follower.y, nearestE.x - follower.x);
-                        fireWeapon(follower.x, follower.y, eAngle, true);
+                        fireActiveWeapon(follower.x, follower.y, eAngle, true);
                         follower.cd = 30;
                     }
                 }
             });
 
-            // Projectile Physics Translators
             bullets.forEach((b, bIdx) => {
                 b.x += b.vx; b.y += b.vy;
                 if (b.x < 0 || b.x > 900 || b.y < 0 || b.y > 550) bullets.splice(bIdx, 1);
 
                 enemies.forEach((e, eIdx) => {
                     if (Math.hypot(b.x - e.x, b.y - e.y) < 18) {
-                        e.hp--; playSound('hit');
+                        e.hp--; playGunSound('hit');
                         if (!b.pierce) bullets.splice(bIdx, 1);
                         else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
 
@@ -183,7 +224,6 @@
                 });
             });
 
-            // Alien Chasing AI Navigation loop properties
             enemies.forEach((e, idx) => {
                 let eAngle = Math.atan2(player.y - e.y, player.x - e.x);
                 e.x += Math.cos(eAngle) * e.speed; e.y += Math.sin(eAngle) * e.speed;
@@ -194,7 +234,6 @@
                 }
             });
 
-            // Scavenge verification loop check
             crates.forEach((c, idx) => {
                 if (Math.hypot(player.x - c.x, player.y - c.y) < player.size + 15) {
                     currentGun = c.type; maxAmmo = c.type === "50 Cal Sniper" ? 5 : 8; ammo = maxAmmo;
@@ -205,67 +244,56 @@
             // RENDERING LOOPS
             ctx.clearRect(0, 0, 900, 550);
 
-            // Draw Background Grids Tactical Grid Floor Map
             ctx.strokeStyle = "#162016"; ctx.lineWidth = 1;
             for(let i=0; i<900; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,550); ctx.stroke(); }
             for(let j=0; j<550; j+=50) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(900,j); ctx.stroke(); }
 
-            // Draw Loot Weapons Crates
             crates.forEach(c => {
                 ctx.fillStyle = "#00ffff"; ctx.fillRect(c.x-10, c.y-10, 20, 20);
                 ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.strokeRect(c.x-10, c.y-10, 20, 20);
                 ctx.fillStyle = "#fff"; ctx.font = "9px Arial"; ctx.fillText("CRATE", c.x-14, c.y-14);
             });
 
-            // Draw Trapped Boys Nodes (Waiting Rescue positions)
             trappedBoys.forEach(boy => {
                 if (!boy.saved) {
                     ctx.fillStyle = boy.color; ctx.beginPath(); ctx.arc(boy.x, boy.y, 14, 0, Math.PI*2); ctx.fill();
                     ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-                    ctx.fillStyle = "#fff"; ctx.font = "bold 10px Arial"; ctx.fillText(boy.name[0], boy.x-3, boy.y+4);
+                    ctx.fillStyle = "#fff"; ctx.font = "bold 10px Arial"; ctx.fillText(boy.name, boy.x-14, boy.y-18);
                 }
             });
 
-            // Render Companions Followers Lines
             squadSaved.forEach(f => {
                 ctx.fillStyle = f.color; ctx.beginPath(); ctx.arc(f.x, f.y, 15, 0, Math.PI*2); ctx.fill();
                 ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.stroke();
             });
 
-            // PLAYER MODEL OPERATOR BODY (Top-Down POV setup structure)
             ctx.save();
             ctx.translate(player.x, player.y);
             ctx.rotate(player.angle);
-            ctx.fillStyle = "#444"; ctx.fillRect(6, -4, 26, 6); // Weapon Rifle Barrel frame length
-            ctx.fillStyle = "#ff00ff"; // Shuceeb Operator Signature deep magenta profile
+            ctx.fillStyle = "#444"; ctx.fillRect(6, -4, 26, 6); 
+            ctx.fillStyle = "#ff00ff"; 
             ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI*2); ctx.fill();
             ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
-            ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, 0, player.size*0.5, 0, Math.PI*2); ctx.fill(); // Head circle
+            ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, 0, player.size*0.5, 0, Math.PI*2); ctx.fill(); 
             ctx.restore();
 
-            // Draw Projectiles
             bullets.forEach(b => { ctx.fillStyle = currentGun === "50 Cal Sniper" ? "#ffcc00" : "#00ffff"; ctx.fillRect(b.x-2, b.y-2, 5, 5); });
 
-            // Draw Alien Spiders
             enemies.forEach(e => {
                 ctx.fillStyle = "#39e639"; ctx.beginPath(); ctx.arc(e.x, e.y, 12, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "#000"; ctx.fillRect(e.x-3, e.y-3, 2, 2); ctx.fillRect(e.x+2, e.y-3, 2, 2); // Alien facial elements
+                ctx.fillStyle = "#000"; ctx.fillRect(e.x-3, e.y-3, 2, 2); ctx.fillRect(e.x+2, e.y-3, 2, 2); 
             });
 
             requestAnimationFrame(gameLoop);
         }
 
         function updateUI() {
-            document.getElementById("ui-hp").innerText = Math.floor(hp) + "/100";
+            document.getElementById("ui-hp").innerText = `${Math.floor(hp)}/100`;
             document.getElementById("ui-weapon").innerText = currentGun;
             document.getElementById("ui-ammo").innerText = reloadTimer > 0 ? "RELOADING" : `${ammo}/${maxAmmo}`;
             document.getElementById("ui-kills").innerText = kills;
             document.getElementById("ui-squad").innerText = `${squadSaved.length}/5`;
         }
-
-        // Initialize Call of Duty 2D Engine Grid Simulation Loop
-        spawnAlienCrawler();
-        requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
