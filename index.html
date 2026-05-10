@@ -4,20 +4,47 @@
     <title>Skittlini: Zombie Strike | 2D Action Arena</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
-        #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
-        canvas { background: #111411; border: 4px solid #333; cursor: crosshair; display: block; margin: 10px auto; box-shadow: 0 0 30px rgba(0,255,0,0.15); transition: background-color 1.5s ease; }
+        #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
+        canvas { background: #111411; border: 4px solid #333; cursor: crosshair; display: none; margin: 10px auto; box-shadow: 0 0 30px rgba(0,255,0,0.15); transition: background-color 1.5s ease; }
         .badge { color: #ffff00; text-shadow: 0 0 8px #ffff00; }
-        /* Movie Captions Styling Layout */
-        #caption-ticker { font-size: 20px; font-weight: bold; text-transform: uppercase; margin-top: 5px; height: 30px; letter-spacing: 1px; }
+        #caption-ticker { font-size: 20px; font-weight: bold; text-transform: uppercase; margin-top: 5px; height: 30px; letter-spacing: 1px; display: none; }
+        
+        /* Menu and Cutscene Screen Layouts */
+        .screen { padding: 40px; max-width: 750px; margin: auto; height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .char-btn { padding: 15px; margin: 8px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 16px; width: 220px; text-transform: uppercase; font-weight: bold; }
+        .char-btn:hover { background: #00ff00; color: black; box-shadow: 0 0 15px #00ff00; }
+        #story-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff00ff; min-height: 150px; text-transform: uppercase; font-weight: bold; text-align: left; background: #111411; border: 2px solid #ff00ff; padding: 20px; }
+        .next-btn { background: #ff00ff; color: #fff; border: none; padding: 12px 30px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 0 10px #ff00ff; text-transform: uppercase; }
+        .next-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
     </style>
 </head>
 <body>
 
+    <!-- INSTANT CAPTION STORY SCREEN -->
+    <div id="story-screen" class="screen">
+        <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px; margin-top: 0;">🍬 THE SKITTLINI OUTBREAKINI 🍬</h2>
+        <div id="story-text">Loading subtitles...</div>
+        <button id="story-btn" class="next-btn" onclick="nextStoryLine()">NEXT CAPTION</button>
+    </div>
+
+    <!-- OPERATOR MENU SCREEN -->
+    <div id="menu-screen" class="screen" style="display:none;">
+        <h1 style="color: #00ff00; font-size: 28px; margin-top: 0; text-transform: uppercase;">Select Your Ground Operator</h1>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 500px;">
+            <button class="char-btn" onclick="launchGroundUnit('Shuceeb', '#ff00ff')">Shuceeb</button>
+            <button class="char-btn" onclick="launchGroundUnit('Aadam', '#ff0055')">Aadam</button>
+            <button class="char-btn" onclick="launchGroundUnit('Yakoub', '#ffcc00')">Yakoub</button>
+            <button class="char-btn" onclick="launchGroundUnit('Daiyon', '#9900ff')">Daiyon</button>
+            <button class="char-btn" onclick="launchGroundUnit('Arafat', '#00ff66')">Arafat</button>
+            <button class="char-btn" onclick="launchGroundUnit('Naythan', '#ff6600')">Naythan</button>
+        </div>
+    </div>
+
     <!-- HUD STATS DASHBOARD -->
     <div id="ui-box">
-        <div>OPERATOR: <span style="color: #ff00ff;">SHUCEEB</span></div>
+        <div>OPERATOR: <span id="ui-name" style="color: #ff00ff;">---</span></div>
         <div>HP: <span id="ui-hp" style="color: #ff3333;">100/100</span></div>
-        <div>ROUND: <span id="ui-round" style="color: #00ffff;">1</span></div>
+        <div>WEAPON TIER: <span id="ui-gun-name" style="color: #00ffff;">Pistol</span> (Lv.<span id="ui-round">1</span>)</div>
         <div>AMMO: <span id="ui-ammo" style="color: #ff00ff;">30/30</span></div>
         <div>KILLS: <span id="ui-kills" class="badge">0</span></div>
     </div>
@@ -26,9 +53,38 @@
     <canvas id="gameCanvas" width="900" height="460"></canvas>
 
     <!-- LIVE ACTION CAPTIONS FEED -->
-    <div id="caption-ticker" style="color: #ff00ff; text-shadow: 0 0 8px #ff00ff;">[TACTICAL DEPLOYMENT SUCCESSFUL: PREPARE FOR COMBAT]</div>
+    <div id="caption-ticker" style="color: #ff00ff; text-shadow: 0 0 8px #ff00ff;">[TACTICAL DEPLOYMENT SUCCESSFUL]</div>
 
     <script>
+        const storyLines = [
+            "[SCENE 1: THE DISCOVERY]\n\nSHUCEEB WAS RETURNING FROM THE SHOP WITH A MASSIVE COAL BAG OF SKITTLES FOR THE BOYS WHEN HE ENCOUNTERED THE FIRST SPIDER INFESTATION UNIT.",
+            "[SCENE 2: TOXIC SPORES OUTBREAK]\n\nTHE MUTANT VIRUS SPREAD RAPIDLY THROUGH THE BLOCK, TURNING CITIZENS INTO GREEN CRAWLING INVASION CREATURES.",
+            "[SCENE 3: Arena MOBILIZATION]\n\nTHE SQUAD DECIDED TO FORTIFY A HIGH-DENSITY FLAT GROUND PLATFORM ARENA FIELD.",
+            "[SCENE 4: STRATEGIC DEPLOYMENT]\n\nCHOOSE AN OPERATOR MEMBER OF YOUR CREW, ENGAGE SIGHT LOCK, AND USE EVOLVING GUN GEAR TIERS TO CLEANSE THE STRIKE ZONE!"
+        ];
+        
+        let storyIdx = 0;
+        function showCaption() {
+            document.getElementById("story-text").innerText = storyLines[storyIdx];
+            if (storyIdx === storyLines.length - 1) {
+                document.getElementById("story-btn").innerText = "OPEN OPERATOR FILES";
+            } else {
+                document.getElementById("story-btn").innerText = "NEXT CAPTION";
+            }
+        }
+
+        function nextStoryLine() {
+            storyIdx++;
+            if (storyIdx < storyLines.length) {
+                showCaption();
+            } else {
+                document.getElementById("story-screen").style.display = "none";
+                document.getElementById("menu-screen").style.display = "flex";
+            }
+        }
+
+        window.onload = function() { showCaption(); };
+
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
@@ -52,8 +108,8 @@
         }
 
         // Engine Configuration Variables
-        let hp = 100, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0;
-        let player = { x: 450, y: 360, vx: 0, vy: 0, size: 18, speed: 5, jumpPower: 12, grounded: true, angle: 0 };
+        let hp = 100, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0, currentWeaponName = "Tactical Pistol";
+        let player = { x: 450, y: 360, vx: 0, vy: 0, size: 18, speed: 5, jumpPower: 12, grounded: true, angle: 0, name: "---", color: "#ff00ff" };
         let bullets = [], enemies = [], keys = {}, mouseX = 450, mouseY = 250;
         const gravity = 0.5, groundY = 390;
 
@@ -69,36 +125,60 @@
         ];
         let colorIdx = 0;
 
-        // Dynamic 1.5s Environment Ticker (1500 milliseconds)
-        setInterval(() => {
-            colorIdx = (colorIdx + 1) % bgColors.length;
-            canvas.style.backgroundColor = bgColors[colorIdx];
+        function launchGroundUnit(name, color) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            player.name = name;
+            player.color = color;
             
-            // Sync current subtitle feed to match background rotation environment
-            let ticker = document.getElementById("caption-ticker");
-            ticker.style.color = gridColors[colorIdx];
-            ticker.style.textShadow = `0 0 8px ${gridColors[colorIdx]}`;
-            ticker.innerText = loopCaptions[colorIdx];
-        }, 1500);
+            document.getElementById("ui-name").innerText = name;
+            document.getElementById("ui-name").style.color = color;
+            
+            document.getElementById("menu-screen").style.display = "none";
+            document.getElementById("ui-box").style.display = "flex";
+            document.getElementById("caption-ticker").style.display = "block";
+            canvas.style.display = "block";
 
-        // Input Setup
-        window.addEventListener("keydown", e => {
-            keys[e.key.toLowerCase()] = true;
-            if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) {
-                reloadTimer = 40;
-                document.getElementById("caption-ticker").innerText = "[TACTICAL MAGAZINE RELOAD SEQUENCE INITIATED]";
-            }
-        });
-        window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-        canvas.addEventListener("mousemove", e => {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
-            mouseY = e.clientY - rect.top;
-        });
+            // Activate Listeners and Engine Tickers
+            window.addEventListener("keydown", e => {
+                keys[e.key.toLowerCase()] = true;
+                if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) {
+                    reloadTimer = 40;
+                    document.getElementById("caption-ticker").innerText = "[TACTICAL MAGAZINE RELOAD SEQUENCE INITIATED]";
+                }
+            });
+            window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+            canvas.addEventListener("mousemove", e => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+            });
+
+            window.addEventListener("mousedown", () => isMouseDown = true);
+            window.addEventListener("mouseup", () => isMouseDown = false);
+
+            setInterval(() => {
+                colorIdx = (colorIdx + 1) % bgColors.length;
+                canvas.style.backgroundColor = bgColors[colorIdx];
+                let ticker = document.getElementById("caption-ticker");
+                ticker.style.color = gridColors[colorIdx];
+                ticker.style.textShadow = `0 0 8px ${gridColors[colorIdx]}`;
+                ticker.innerText = loopCaptions[colorIdx];
+            }, 1500);
+
+            spawnZombie();
+            setInterval(gameLoop, 1000 / 30);
+        }
 
         let isMouseDown = false;
-        canvas.addEventListener("mousedown", () => isMouseDown = true);
-        window.addEventListener("mouseup", () => isMouseDown = false);
+
+        function checkWeaponTier() {
+            if (roundNum >= 50) { currentWeaponName = "Tactical Mini-Gun"; maxAmmo = 100; }
+            else if (roundNum >= 35) { currentWeaponName = "Laser Railgun"; maxAmmo = 5; }
+            else if (roundNum >= 20) { currentWeaponName = "Plasma Carbine"; maxAmmo = 25; }
+            else if (roundNum >= 10) { currentWeaponName = "Remington Shotgun"; maxAmmo = 6; }
+            else { currentWeaponName = "Tactical Pistol"; maxAmmo = 15; }
+            document.getElementById("ui-gun-name").innerText = currentWeaponName;
+        }
 
         function fireWeapon() {
             if (reloadTimer > 0 || fireCooldown > 0) return;
@@ -107,16 +187,42 @@
             ammo--;
             playSound('shoot');
             let bAngle = Math.atan2(mouseY - player.y, mouseX - player.x);
-            bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 14, vy: Math.sin(bAngle) * 14 });
-            fireCooldown = 5; 
+            
+            // Evolving weapon loadouts bullet configurations mapping
+            if (currentWeaponName === "Remington Shotgun") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle - 0.15) * 13, vy: Math.sin(bAngle - 0.15) * 13, dmg: 1.5, size: 5, color: "#ff0000" });
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 13, vy: Math.sin(bAngle) * 13, dmg: 1.5, size: 5, color: "#ff0000" });
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle + 0.15) * 13, vy: Math.sin(bAngle + 0.15) * 13, dmg: 1.5, size: 5, color: "#ff0000" });
+                fireCooldown = 18;
+            } 
+            else if (currentWeaponName === "Plasma Carbine") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 15, vy: Math.sin(bAngle) * 15, dmg: 3, size: 9, color: "#00ffff" });
+                fireCooldown = 8;
+            }
+            else if (currentWeaponName === "Laser Railgun") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 22, vy: Math.sin(bAngle) * 22, dmg: 6, size: 4, color: "#00ff00", pierce: 2 });
+                fireCooldown = 32;
+            }
+            else if (currentWeaponName === "Tactical Mini-Gun") {
+                // Alternating twin lines tracking cursor matrix
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle - 0.04) * 17, vy: Math.sin(bAngle - 0.04) * 17, dmg: 1, size: 5, color: "magenta" });
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle + 0.04) * 17, vy: Math.sin(bAngle + 0.04) * 17, dmg: 1, size: 5, color: "orange" });
+                fireCooldown = 3;
+            }
+            else { // Level 1-9 Tactical Pistol
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 14, vy: Math.sin(bAngle) * 14, dmg: 1, size: 5, color: "#ffff00" });
+                fireCooldown = 6;
+            }
+            
             updateUI();
         }
 
         function spawnZombie() {
+            if (canvas.style.display !== "block") return;
             let spawnLeft = Math.random() < 0.5;
             let eX = spawnLeft ? -20 : 920;
-            enemies.push({ x: eX, y: groundY - 12, hp: 1 + Math.floor(roundNum * 0.5), speed: (spawnLeft ? 1 : -1) * (1.5 + (roundNum * 0.2)) });
-            setTimeout(spawnZombie, Math.max(300, 1800 - roundNum * 150));
+            enemies.push({ x: eX, y: groundY - 12, hp: 1 + Math.floor(roundNum * 0.4), speed: (spawnLeft ? 1 : -1) * (1.5 + (roundNum * 0.15)) });
+            setTimeout(spawnZombie, Math.max(300, 1800 - roundNum * 120));
         }
 
         function gameLoop() {
@@ -157,14 +263,22 @@
 
                 enemies.forEach((e, eIdx) => {
                     if (Math.hypot(b.x - e.x, b.y - e.y) < 16) {
-                        e.hp--; playSound('hit');
-                        bullets.splice(bIdx, 1);
+                        e.hp -= b.dmg; playSound('hit');
+                        
+                        if(!b.pierce) {
+                            bullets.splice(bIdx, 1);
+                        } else {
+                            b.pierce--;
+                            if(b.pierce <= 0) bullets.splice(bIdx, 1);
+                        }
+
                         if (e.hp <= 0) {
                             enemies.splice(eIdx, 1);
                             kills++;
-                            if (kills % 15 === 0) { 
+                            if (kills % 10 === 0) { 
                                 roundNum++; 
-                                document.getElementById("caption-ticker").innerText = `[THREAT LEVEL ESCALATED: ENEMY STRENGTH MULTIPLIED]`;
+                                checkWeaponTier();
+                                document.getElementById("caption-ticker").innerText = `[WEAPON PROGRESSION TIER EVOLVED: LEVEL ${roundNum} REACHED]`;
                             } 
                             updateUI();
                         }
@@ -180,7 +294,7 @@
 
                 if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + 10) {
                     hp -= 0.5; updateUI();
-                    if (hp <= 0) { alert("SQUAD OVERRUN! Shuceeb was defeated."); location.reload(); }
+                    if (hp <= 0) { alert("SQUAD OVERRUN! Operator was defeated."); location.reload(); }
                 }
             });
 
@@ -193,7 +307,7 @@
             for(let i=0; i<900; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,groundY); ctx.stroke(); }
             for(let j=0; j<groundY; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(900,j); ctx.stroke(); }
 
-            // Draw Steel Floor Base
+            // Draw Floor Base
             ctx.fillStyle = "#151515"; ctx.fillRect(0, groundY, 900, 70);
             ctx.strokeStyle = gridColors[colorIdx]; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(900, groundY); ctx.stroke();
 
@@ -206,14 +320,16 @@
             ctx.fillStyle = "#555"; ctx.fillRect(0, -3, 24, 6);
             ctx.restore();
 
-            ctx.fillStyle = "#ff00ff"; ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = player.color; ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
             ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, -6, player.size * 0.4, 0, Math.PI*2); ctx.fill();
             ctx.restore();
 
-            // Draw Bullets Lasers Particles
-            ctx.fillStyle = gridColors[colorIdx]; 
-            bullets.forEach(b => ctx.fillRect(b.x - 2, b.y - 2, 5, 5));
+            // Draw Bullets Particle Stream
+            bullets.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x - Math.floor(b.size/2), b.y - Math.floor(b.size/2), b.size, b.size);
+            });
 
             // Draw Running Alien Spiders
             enemies.forEach(e => {
@@ -228,9 +344,6 @@
             document.getElementById("ui-ammo").innerText = reloadTimer > 0 ? "RELOADING" : `${ammo}/${maxAmmo}`;
             document.getElementById("ui-kills").innerText = kills;
         }
-
-        spawnZombie();
-        setInterval(gameLoop, 1000 / 30);
     </script>
 </body>
 </html>
