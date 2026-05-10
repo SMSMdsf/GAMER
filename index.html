@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>The Skittlini&Zombini.io | 2D Action Arena</title>
+    <title>The Skittlini&Zombini | 2D Action Arena</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
@@ -10,11 +10,17 @@
         #caption-ticker { font-size: 20px; font-weight: bold; text-transform: uppercase; margin-top: 5px; height: 30px; letter-spacing: 1px; display: none; }
         
         .screen { padding: 40px; max-width: 750px; margin: auto; height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .char-btn { padding: 15px; margin: 8px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 16px; width: 220px; text-transform: uppercase; font-weight: bold; }
+        .char-btn { padding: 12px; margin: 6px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 15px; width: 200px; text-transform: uppercase; font-weight: bold; }
         .char-btn:hover { background: #00ff00; color: black; box-shadow: 0 0 15px #00ff00; }
         #story-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff00ff; min-height: 150px; text-transform: uppercase; font-weight: bold; text-align: left; background: #111411; border: 2px solid #ff00ff; padding: 20px; }
         .next-btn { background: #ff00ff; color: #fff; border: none; padding: 12px 30px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 0 10px #ff00ff; text-transform: uppercase; }
         .next-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
+        
+        /* Voice Engine Toggle Button */
+        .voice-btn { background: #00ff00; color: black; border: none; padding: 10px 20px; font-size: 14px; cursor: pointer; font-weight: bold; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 0 10px #00ff00; text-transform: uppercase; }
+        .voice-btn:hover { background: white; box-shadow: 0 0 15px white; }
+        
+        .manual-box { background: #111411; border: 1px solid #00ff00; padding: 15px; text-align: left; font-size: 13px; max-width: 600px; margin-top: 20px; color: #fff; line-height: 1.4; }
         
         #upgrade-panel { display: none; justify-content: center; margin-top: 5px; gap: 20px; }
         .up-btn { background: #ff3300; color: white; border: none; padding: 10px 25px; font-size: 16px; cursor: pointer; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px rgba(255,51,0,0.5); text-transform: uppercase; }
@@ -22,49 +28,21 @@
         .up-btn:hover:not(:disabled) { background: #ff5533; box-shadow: 0 0 15px #ff3300; }
         .ammo-btn { background: #00ffff; color: black; box-shadow: 0 0 10px rgba(0,255,255,0.5); }
         .ammo-btn:hover:not(:disabled) { background: white; box-shadow: 0 0 15px white; }
-
-        /* Integrated Instructions Layout Panel */
-        .instruction-card { background: #111411; border: 2px solid #00ff00; padding: 15px; margin-bottom: 20px; text-align: left; font-size: 13px; line-height: 1.5; color: #fff; width: 100%; box-sizing: border-box; }
-        .instruction-card h3 { color: #00ffff; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <!-- INSTANT CAPTION STORY SCREEN WITH TEXT-TO-SPEECH -->
-    <div id="story-screen" class="screen" onclick="activateVoiceEngine()">
+    <!-- INSTANT CAPTION SCREEN WITH ACTIVE NARRATOR BUTTON -->
+    <div id="story-screen" class="screen">
         <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px; margin-top: 0;">🍬 THE SKITTLINI ZOMBINI OR ALIENILI 🍬</h2>
-        <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">[ CLICK SCREEN TO ENABLE VOICE NARRATION ]</div>
+        <button id="v-toggle" class="voice-btn" onclick="activateVoiceEngine()">📢 ENABLE VOICE ANNOUNCER</button>
         <div id="story-text">Loading subtitles...</div>
         <button id="story-btn" class="next-btn" onclick="nextStoryLine()">NEXT CAPTION</button>
     </div>
 
-    <!-- OPERATOR MENU SCREEN WITH INTEGRATED GAME MANUAL -->
+    <!-- OPERATOR MENU SCREEN WITH MANUAL -->
     <div id="menu-screen" class="screen" style="display:none;">
-        <h1 style="color: #00ff00; font-size: 26px; margin-top: 0; text-transform: uppercase;">Operator Selector & Manual</h1>
-        
-        <!-- HIGH VISIBILITY OPERATIONAL INSTRUCTIONS -->
-        <div class="instruction-card">
-            <h3>🎮 FIELD COMBAT MANUAL (HOW TO PLAY):</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                    <strong>⌨️ MOVEMENT CONTROLS:</strong><br>
-                    • <strong>A / D Keys</strong> — Run Left and Right across steel lane<br>
-                    • <strong>W Key</strong> — Leap upwards into air space platforms<br>
-                    • <strong>R Key</strong> — Initiate manual magazine reload delay cycle
-                </div>
-                <div>
-                    <strong>🎯 COMBAT SYSTEM & ECONOMY:</strong><br>
-                    • <strong>MOUSE CURSOR</strong> — Pivot weapon muzzle orientation 360°<br>
-                    • <strong>LEFT CLICK</strong> — Fire custom firearm rounds stream<br>
-                    • <strong>UPGRADES</strong> — Spend <strong>$15 per kill cash</strong> below the canvas field to unlock Shotguns, Plasma, and Mini-Guns!
-                </div>
-            </div>
-            <div style="color: #ff3300; font-weight: bold; margin-top: 10px; text-align: center; text-transform: uppercase;">
-                ⚠️ ALERT: GIANT MUTANT ELITE BOSS DUELS SPAWN AUTOMATICALLY EVERY 5 LEVEL UPGRADES!
-            </div>
-        </div>
-
-        <div style="font-weight: bold; color: #ff00ff; margin-bottom: 10px;">CHOOSE DEPLOYMENT OPERATOR TO ENTER GRID:</div>
+        <h1 style="color: #00ff00; font-size: 26px; margin: 0 0 15px 0; text-transform: uppercase;">Select Your Ground Operator</h1>
         <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 500px;">
             <button class="char-btn" onclick="launchGroundUnit('Shuceeb', '#ff00ff')">Shuceeb</button>
             <button class="char-btn" onclick="launchGroundUnit('Aadam', '#ff0055')">Aadam</button>
@@ -72,6 +50,16 @@
             <button class="char-btn" onclick="launchGroundUnit('Daiyon', '#9900ff')">Daiyon</button>
             <button class="char-btn" onclick="launchGroundUnit('Arafat', '#00ff66')">Arafat</button>
             <button class="char-btn" onclick="launchGroundUnit('Naythan', '#ff6600')">Naythan</button>
+        </div>
+
+        <div class="manual-box">
+            <span style="color: #00ffff; font-weight: bold; font-size: 15px;">🎮 OPERATIONAL MANUAL & CONTROLS:</span><br>
+            • <strong>A / D Keys</strong>: Run Left and Right across the steel floor base platform.<br>
+            • <strong>W Key</strong>: Jump up to leap over enemies or dodge oncoming hits.<br>
+            • <strong>Mouse Pointer</strong>: Aim your gun barrel 360 degrees anywhere on screen.<br>
+            • <strong>Left Mouse Click</strong>: Hold down to spray a continuous stream of bullets.<br>
+            • <strong>R Key</strong>: Reload your gun clip manually when you are out of ammo.<br>
+            • <strong>Left Side Gate</strong>: Spiders enter strictly from the red barrier box. ALERT: THEY ARE SPRINTING!
         </div>
     </div>
 
@@ -88,7 +76,7 @@
     <!-- SIDE-SCROLLING CANVAS -->
     <canvas id="gameCanvas" width="900" height="420"></canvas>
 
-    <!-- DOUBLE CONTROL PANEL SHOP -->
+    <!-- SHOP PANEL -->
     <div id="upgrade-panel">
         <button id="buy-btn" class="up-btn" onclick="buyGunLevel()">UPGRADE GUN LEVEL ($100)</button>
         <button id="ammo-btn" class="up-btn ammo-btn" onclick="buyMaxAmmo()">RESTOCK MAX AMMO ($75)</button>
@@ -108,9 +96,20 @@
         let storyIdx = 0;
         let voiceEnabled = false;
 
+        // MANUALLY CLICK TO UNLOCK BROWSER SPEECH SYNTHESIS PERMISSIONS LOCK
         function activateVoiceEngine() {
             voiceEnabled = true;
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // UI Button feedback confirmation update
+            let vBtn = document.getElementById("v-toggle");
+            vBtn.innerText = "📢 AI ANNOUNCER ONLINE";
+            vBtn.style.background = "#ff00ff";
+            vBtn.style.color = "white";
+            vBtn.style.boxShadow = "0 0 15px #ff00ff";
+            
+            // Proactively test trigger speech reading out current baseline index line
+            speakCaptionText(storyLines[storyIdx]);
         }
 
         function speakCaptionText(text) {
@@ -143,9 +142,6 @@
                 if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 document.getElementById("story-screen").style.display = "none";
                 document.getElementById("menu-screen").style.display = "flex";
-                
-                // Read manual alert line out loud automatically when loading menu
-                speakCaptionText("Field manual loaded. Choose an operator.");
             }
         }
 
@@ -161,8 +157,8 @@
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             if (type === 'shoot') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.08);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.08);
                 gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.08);
             } else if (type === 'hit') {
@@ -170,8 +166,8 @@
                 gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.05);
             } else if (type === 'lvl') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.25);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.25);
                 gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.25);
             } else if (type === 'boss') {
@@ -193,9 +189,9 @@
         const loopCaptions = [
             "[THE SKITTLINI ZOMBINI OR ALIENILI ARENA FLOW ACTIVE]",
             "[MUTANT SPORES LOCKING ENEMY TRAILING MATRIX]",
-            "[LEFT SPAWN GATE ACTIVE: LANE HOLD COMMENCING]",
+            "[LEFT SPAWN GATE ACTIVE: SPRINTING THREAT INBOUND]",
             "[SKITTLINI MATRIX ENERGY FIELD RECHARGING]",
-            "[ALERT: HIGH DENSITY BIO-THREAT SPOTTED LEFT]"
+            "[ALERT: HIGH VELOCITY BIO-THREAT SPOTTED LEFT]"
         ];
         let colorIdx = 0;
 
@@ -273,7 +269,7 @@
             bosses.push({
                 x: -50, y: groundY - 30,
                 hp: 20 + (scaleMultiplier * 30), maxHp: 20 + (scaleMultiplier * 30),
-                size: 22 + (scaleMultiplier * 3), speed: 0.9 + (scaleMultiplier * 0.12)
+                size: 22 + (scaleMultiplier * 3), speed: 2.2 + (scaleMultiplier * 0.25) 
             });
             let message = `[ALERT: OVERLORD BOSS ENGAGED - LEVEL ${roundNum} CRITICAL DEFENSE]`;
             document.getElementById("caption-ticker").innerText = message;
@@ -286,7 +282,7 @@
             if (roundNum >= 50) { currentWeaponName = "Tactical Mini-Gun"; maxAmmo = 250; }
             else if (roundNum >= 35) { currentWeaponName = "Laser Railgun"; maxAmmo = 10; }
             else if (roundNum >= 20) { currentWeaponName = "Plasma Carbine"; maxAmmo = 50; }
-            else if (roundNum >= 10) { currentWeaponName = "Remington Shotgun"; maxAmmo = 12; }
+            else if (roundNum >= 10) { currentWeaponName = "M4 Carbine Rifle"; maxAmmo = 60; } 
             else { currentWeaponName = "Tactical Pistol"; maxAmmo = 30; }
             
             if(maxAmmo !== oldMax && reloadTimer === 0) ammo = maxAmmo;
@@ -301,11 +297,9 @@
             let bAngle = Math.atan2(mouseY - player.y, mouseX - player.x);
             let bulletPowerMultiplier = 1 + (roundNum * 0.1);
             
-            if (currentWeaponName === "Remington Shotgun") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle - 0.15) * 13, vy: Math.sin(bAngle - 0.15) * 13, dmg: 1.5 * bulletPowerMultiplier, size: 5, color: "#ff0000" });
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 13, vy: Math.sin(bAngle) * 13, dmg: 1.5 * bulletPowerMultiplier, size: 5, color: "#ff0000" });
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle + 0.15) * 13, vy: Math.sin(bAngle + 0.15) * 13, dmg: 1.5 * bulletPowerMultiplier, size: 5, color: "#ff0000" });
-                fireCooldown = 18;
+            if (currentWeaponName === "M4 Carbine Rifle") {
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 16, vy: Math.sin(bAngle) * 16, dmg: 2.2 * bulletPowerMultiplier, size: 6, color: "#ff3300" });
+                fireCooldown = 4; 
             } 
             else if (currentWeaponName === "Plasma Carbine") {
                 bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 15, vy: Math.sin(bAngle) * 15, dmg: 3 * bulletPowerMultiplier, size: 9, color: "#00ffff" });
@@ -331,7 +325,7 @@
             if (canvas.style.display !== "block") return;
             if (!bossActive) {
                 let eX = -20; 
-                enemies.push({ x: eX, y: groundY - 12, hp: 1 + Math.floor(roundNum * 0.4), speed: 1.5 + (roundNum * 0.15) });
+                enemies.push({ x: eX, y: groundY - 12, hp: 1 + Math.floor(roundNum * 0.4), speed: 3.7 + (roundNum * 0.25) });
             }
             setTimeout(spawnZombie, Math.max(350, 1800 - roundNum * 100));
         }
@@ -386,7 +380,7 @@
             enemies.forEach((e, idx) => {
                 e.x += e.speed;
                 if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + 10) {
-                    hp -= 0.5; updateUI();
+                    hp -= 0.6; updateUI(); 
                     if (hp <= 0) { alert("SQUAD OVERRUN! Operator was defeated."); location.reload(); }
                 }
             });
@@ -394,7 +388,7 @@
             bosses.forEach((boss, idx) => {
                 boss.x += boss.speed;
                 if (Math.hypot(player.x - boss.x, player.y - boss.y) < player.size + boss.size - 5) {
-                    hp -= 1.2; updateUI();
+                    hp -= 1.5; updateUI();
                     if (hp <= 0) { alert("BOSS CRUSHED THE ARENA! Game Over."); location.reload(); }
                 }
             });
