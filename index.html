@@ -1,153 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>The Skittlini Zombini Alienili | 2D Action Arena</title>
+    <title>Zombie.2.0.io | FBI Special Operations</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
-        #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
-        canvas { background: #111411; border: 4px solid #333; cursor: crosshair; display: block; margin: 10px auto 5px auto; box-shadow: 0 0 30px rgba(0,255,0,0.15); transition: background-color 1.5s ease; }
+        #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
+        canvas { background: #111411; border: 4px solid #333; cursor: crosshair; display: block; margin: 8px auto 4px auto; box-shadow: 0 0 30px rgba(0,255,0,0.15); transition: background-color 1.5s ease; }
         .badge { color: #ffff00; text-shadow: 0 0 8px #ffff00; }
-        #caption-ticker { font-size: 20px; font-weight: bold; text-transform: uppercase; margin-top: 5px; height: 30px; letter-spacing: 1px; display: none; }
+        #upgrade-panel { display: flex; justify-content: center; margin-top: 4px; gap: 10px; flex-wrap: wrap; max-width: 950px; margin-left: auto; margin-right: auto; }
+        .up-btn { background: #222; color: #00ff00; border: 2px solid #00ff00; padding: 5px 10px; font-size: 11px; cursor: pointer; font-weight: bold; text-transform: uppercase; border-radius: 4px; }
+        .up-btn:disabled { border-color: #444; color: #555; cursor: not-allowed; box-shadow: none; }
+        .up-btn:hover:not(:disabled) { background: #00ff00; color: #000; box-shadow: 0 0 10px #00ff00; }
         
-        .screen { padding: 40px; max-width: 750px; margin: auto; height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .char-btn { padding: 12px; margin: 6px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 15px; width: 200px; text-transform: uppercase; font-weight: bold; }
-        .char-btn:hover { background: #00ff00; color: black; box-shadow: 0 0 15px #00ff00; }
-        #story-text { font-size: 22px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff00ff; min-height: 150px; text-transform: uppercase; font-weight: bold; text-align: left; background: #111411; border: 2px solid #ff00ff; padding: 20px; }
-        .next-btn { background: #ff00ff; color: #fff; border: none; padding: 12px 30px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 0 10px #ff00ff; text-transform: uppercase; }
-        .next-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
-        
-        /* Voice Engine Toggle Button */
-        .voice-btn { background: #00ff00; color: black; border: none; padding: 10px 20px; font-size: 14px; cursor: pointer; font-weight: bold; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 0 10px #00ff00; text-transform: uppercase; }
-        .voice-btn:hover { background: white; box-shadow: 0 0 15px white; }
-        
-        .manual-box { background: #111411; border: 1px solid #00ff00; padding: 15px; text-align: left; font-size: 13px; max-width: 600px; margin-top: 20px; color: #fff; line-height: 1.4; }
-        
-        #upgrade-panel { display: none; justify-content: center; margin-top: 5px; gap: 20px; }
-        .up-btn { background: #ff3300; color: white; border: none; padding: 10px 25px; font-size: 16px; cursor: pointer; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px rgba(255,51,0,0.5); text-transform: uppercase; }
-        .up-btn:disabled { background: #444; color: #777; cursor: not-allowed; box-shadow: none; }
-        .up-btn:hover:not(:disabled) { background: #ff5533; box-shadow: 0 0 15px #ff3300; }
-        .ammo-btn { background: #00ffff; color: black; box-shadow: 0 0 10px rgba(0,255,255,0.5); }
-        .ammo-btn:hover:not(:disabled) { background: white; box-shadow: 0 0 15px white; }
+        #story-caption-box { width: 900px; margin: 5px auto; background: #111411; border: 2px solid #ff00ff; padding: 10px; font-size: 15px; font-weight: bold; text-transform: uppercase; color: #ffffff; text-shadow: 0 0 8px #ff00ff; box-sizing: border-box; min-height: 55px; display: flex; align-items: center; justify-content: center; line-height: 1.3; }
+        .manual-layout { width: 900px; margin: 5px auto; background: #111411; border: 1px solid #00ff00; padding: 10px; text-align: left; font-size: 12px; color: #fff; line-height: 1.4; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <!-- INSTANT CAPTION SCREEN WITH ACTIVE NARRATOR BUTTON -->
-    <div id="story-screen" class="screen">
-        <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px; margin-top: 0;">🍬 THE SKITTLINI ZOMBINI OR ALIENILI 🍬</h2>
-        <button id="v-toggle" class="voice-btn" onclick="activateVoiceEngine()">📢 ENABLE VOICE ANNOUNCER</button>
-        <div id="story-text">Loading subtitles...</div>
-        <button id="story-btn" class="next-btn" onclick="nextStoryLine()">NEXT CAPTION</button>
-    </div>
-
-    <!-- OPERATOR MENU SCREEN WITH MANUAL -->
-    <div id="menu-screen" class="screen" style="display:none;">
-        <h1 style="color: #00ff00; font-size: 26px; margin: 0 0 15px 0; text-transform: uppercase;">Select Your Ground Operator</h1>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 500px;">
-            <button class="char-btn" onclick="launchGroundUnit('Shuceeb', '#ff00ff')">Shuceeb</button>
-            <button class="char-btn" onclick="launchGroundUnit('Aadam', '#ff0055')">Aadam</button>
-            <button class="char-btn" onclick="launchGroundUnit('Yakoub', '#ffcc00')">Yakoub</button>
-            <button class="char-btn" onclick="launchGroundUnit('Daiyon', '#9900ff')">Daiyon</button>
-            <button class="char-btn" onclick="launchGroundUnit('Arafat', '#00ff66')">Arafat</button>
-            <button class="char-btn" onclick="launchGroundUnit('Naythan', '#ff6600')">Naythan</button>
-        </div>
-
-        <div class="manual-box">
-            <span style="color: #00ffff; font-weight: bold; font-size: 15px;">🎮 OPERATIONAL MANUAL & CONTROLS:</span><br>
-            • <strong>A / D Keys</strong>: Run Left and Right across the steel floor base platform.<br>
-            • <strong>W Key</strong>: Jump up to leap over enemies or dodge oncoming hits.<br>
-            • <strong>Mouse Pointer</strong>: Aim your gun barrel 360 degrees anywhere on screen.<br>
-            • <strong>Left Mouse Click</strong>: Hold down to spray a continuous stream of bullets.<br>
-            • <strong>R Key</strong>: Reload your gun clip manually when you are out of ammo.<br>
-            • <strong>Left Side Gate</strong>: Spiders enter strictly from the red barrier box. ALERT: THEY ARE SPRINTING!
-        </div>
-    </div>
-
     <!-- HUD STATS DASHBOARD -->
     <div id="ui-box">
-        <div>OPERATOR: <span id="ui-name" style="color: #ff00ff;">---</span></div>
+        <div>OPERATOR: <span id="ui-name" style="color: #ff00ff;">SHUCEEB (FBI)</span></div>
         <div>HP: <span id="ui-hp" style="color: #ff3333;">100/100</span></div>
         <div>CASH: <span id="ui-cash" style="color: #00ffff;">$0</span></div>
-        <div>WEAPON TIER: <span id="ui-gun-name" style="color: #00ffff;">Pistol</span> (Lv.<span id="ui-round">1</span>)</div>
+        <div>WEAPON TIER: <span id="ui-gun" style="color: #00ffff;">M1911 Pistol</span> (Lv.<span id="ui-round">1</span>)</div>
         <div>AMMO: <span id="ui-ammo" style="color: #ff00ff;">30/30</span></div>
         <div>KILLS: <span id="ui-kills" class="badge">0</span></div>
     </div>
 
-    <!-- SIDE-SCROLLING CANVAS -->
-    <canvas id="gameCanvas" width="900" height="420"></canvas>
+    <!-- MAIN GAME CANVAS -->
+    <canvas id="survivalCanvas" width="900" height="400"></canvas>
 
-    <!-- SHOP PANEL -->
-    <div id="upgrade-panel">
-        <button id="buy-btn" class="up-btn" onclick="buyGunLevel()">UPGRADE GUN LEVEL ($100)</button>
-        <button id="ammo-btn" class="up-btn ammo-btn" onclick="buyMaxAmmo()">RESTOCK MAX AMMO ($75)</button>
+    <!-- CINEMATIC STORY CAPTIONS -->
+    <div id="story-caption-box">[LOADING DRAGON LEVEL THREAT MISSION DATA...]</div>
+
+    <!-- OPERATIONAL MANUAL PANEL -->
+    <div class="manual-layout">
+        <span style="color: #00ffff; font-weight: bold;">🎮 FBI OPERATIONAL MANUAL & CONTROLS:</span><br>
+        • <strong>W, A, S, D Keys</strong>: Navigate Shuceeb around the sector arena grid field.<br>
+        • <strong>Mouse Cursor</strong>: Rotate weapon barrel assembly line 360 degrees to lock focus targets.<br>
+        • <strong>Left Mouse Click</strong>: Hold to deploy continuous tactical bullet ammunition stream arrays.<br>
+        • <strong>R Key / Shop</strong>: Triggers magazine weapon reloads. Purchase squad member deployments below.<br>
+        • <strong>Factions</strong>: Watch out for orange mutants (2x cash payout) and flashing cyan mutants (10x cash value)!
     </div>
 
-    <!-- LIVE ACTION CAPTIONS FEED -->
-    <div id="caption-ticker" style="color: #ff00ff; text-shadow: 0 0 8px #ff00ff;">[TACTICAL DEPLOYMENT SUCCESSFUL]</div>
+    <!-- SURVIVAL GEAR SHOP PANEL -->
+    <div id="upgrade-panel">
+        <button id="wpn-up" class="up-btn" style="border-color: #ff3300; color: #ff3300;" onclick="buyGunLevel()">UPGRADE GUN TIER ($100)</button>
+        <span style="color: #333; font-weight: bold; padding: 0 5px;">|</span>
+        <button id="btn-aadam" class="up-btn" onclick="hireCompanion('Aadam', '#ff0055', 100)">Squad: Aadam ($100)</button>
+        <button id="btn-yakoub" class="up-btn" onclick="hireCompanion('Yakoub', '#ffcc00', 200)">Squad: Yakoub ($200)</button>
+        <button id="btn-daiyon" class="up-btn" onclick="hireCompanion('Daiyon', '#9900ff', 300)">Squad: Daiyon ($300)</button>
+        <button id="btn-arafat" class="up-btn" onclick="hireCompanion('Arafat', '#00ff66', 400)">Squad: Arafat ($400)</button>
+        <button id="btn-naythan" class="up-btn" onclick="hireCompanion('Naythan', '#ff6600', 500)">Squad: Naythan ($500)</button>
+    </div>
 
     <script>
-        const storyLines = [
-            "Shuceeb was returning from the shop with a massive coal bag of Skittles for the boys when he encountered the first spider infestation unit.",
-            "The mutant virus spread rapidly through the block, turning citizens into the invasion compression unit.",
-            "The squad decided to fortify a high density flat ground platform arena field.",
-            "Welcome to the Skittlini Zombini or Alienili arena survival grid. Cleanse the left strike zone map corridor now!"
-        ];
-        
-        let storyIdx = 0;
-        let voiceEnabled = false;
-
-        // MANUALLY CLICK TO UNLOCK BROWSER SPEECH SYNTHESIS PERMISSIONS LOCK
-        function activateVoiceEngine() {
-            voiceEnabled = true;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // UI Button feedback confirmation update
-            let vBtn = document.getElementById("v-toggle");
-            vBtn.innerText = "📢 AI ANNOUNCER ONLINE";
-            vBtn.style.background = "#ff00ff";
-            vBtn.style.color = "white";
-            vBtn.style.boxShadow = "0 0 15px #ff00ff";
-            
-            // Proactively test trigger speech reading out current baseline index line
-            speakCaptionText(storyLines[storyIdx]);
-        }
-
-        function speakCaptionText(text) {
-            if ('speechSynthesis' in window && voiceEnabled) {
-                window.speechSynthesis.cancel(); 
-                let cleanText = text.replace(/\[.*?\]/g, "").trim(); 
-                let utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.rate = 1.0; utterance.pitch = 0.9; 
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        function showCaption() {
-            let textValue = storyLines[storyIdx];
-            document.getElementById("story-text").innerText = textValue.toUpperCase();
-            speakCaptionText(textValue);
-
-            if (storyIdx === storyLines.length - 1) {
-                document.getElementById("story-btn").innerText = "OPEN OPERATOR FILES";
-            } else {
-                document.getElementById("story-btn").innerText = "NEXT CAPTION";
-            }
-        }
-
-        function nextStoryLine() {
-            storyIdx++;
-            if (storyIdx < storyLines.length) {
-                showCaption();
-            } else {
-                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-                document.getElementById("story-screen").style.display = "none";
-                document.getElementById("menu-screen").style.display = "flex";
-            }
-        }
-
-        window.onload = function() { showCaption(); };
-
-        const canvas = document.getElementById("gameCanvas");
+        const canvas = document.getElementById("survivalCanvas");
         const ctx = canvas.getContext("2d");
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -157,177 +66,129 @@
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             if (type === 'shoot') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(240, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.08);
             } else if (type === 'hit') {
                 osc.type = 'square'; osc.frequency.setValueAtTime(90, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            } else if (type === 'lvl') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(350, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.25);
-                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-            } else if (type === 'boss') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-                osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.4);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
             }
         }
 
-        let hp = 100, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0, currentWeaponName = "Tactical Pistol", cash = 0, cost = 100, ammoCost = 75;
-        let player = { x: 450, y: 320, vx: 0, vy: 0, size: 18, speed: 5, jumpPower: 12, grounded: true, angle: 0, name: "---", color: "#ff00ff" };
-        let bullets = [], enemies = [], bosses = [], keys = {}, mouseX = 450, mouseY = 250;
-        const gravity = 0.5, groundY = 350;
+        let hp = 100, cash = 0, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0, cost = 100;
+        let currentWeaponName = "M1911 Pistol", gunRate = 6, gunDamage = 1.0, bulletColor = "#ffff00", bulletSize = 5, bulletPierceCount = 0;
+        let player = { x: 550, y: 220, size: 17, speed: 4.5, angle: 0 }; 
+        let bullets = [], enemies = [], bosses = [], squad = [], keys = {}, mouseX = 450, mouseY = 220;
         let bossActive = false;
 
         const bgColors = ["#111411", "#1a0b1a", "#0b151a", "#1a160b", "#1a0b0b"];
         const gridColors = ["#00ff00", "#ff00ff", "#00ffff", "#ffff00", "#ff0000"];
-        const loopCaptions = [
-            "[THE SKITTLINI ZOMBINI OR ALIENILI ARENA FLOW ACTIVE]",
-            "[MUTANT SPORES LOCKING ENEMY TRAILING MATRIX]",
-            "[LEFT SPAWN GATE ACTIVE: SPRINTING THREAT INBOUND]",
-            "[SKITTLINI MATRIX ENERGY FIELD RECHARGING]",
-            "[ALERT: HIGH VELOCITY BIO-THREAT SPOTTED LEFT]"
+        
+        const storyMissions = [
+            "[BRIEFING: SHUCEEB AND AADAM COMPRISE THE HIGH-TECH FBI SPECIAL OPERATIONS AGENT TRIAD]",
+            "[DISCOVERY: DRAGON LEVEL THREAT LOADED. ALIEN EGG CLUSTERS AND HIGHLY CORROSIVE SLIMY BIOMASS DETECTED AT COAL SITE]",
+            "[BREACH: AN EGG CRACKS OPEN! AN UNKNOWN MUTANT EXOPOD LEAPS OUT AND LAUNCHES DIRECTLY AT THE AGENTS]",
+            "[ENGAGEMENT: SHUCEEB DISCHARGES A HIGH-ENERGY SKITTLE BEAM AS AADAM COMMANDS HIS AUTONOMOUS AI ROBOT DRONES TO PROVIDE COUNTER FIRE]",
+            "[GETAWAY: AGENTS RETREAT TO THE SKITTLE CAR CARRIER, SLAMMING THE ACCELERATOR TO WARN THE REST OF THE SQUAD]"
         ];
         let colorIdx = 0;
 
-        function launchGroundUnit(name, color) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            player.name = name; player.color = color;
-            
-            document.getElementById("ui-name").innerText = name;
-            document.getElementById("ui-name").style.color = color;
-            
-            document.getElementById("menu-screen").style.display = "none";
-            document.getElementById("ui-box").style.display = "flex";
-            document.getElementById("caption-ticker").style.display = "block";
-            document.getElementById("upgrade-panel").style.display = "flex";
-            canvas.style.display = "block";
-
-            window.addEventListener("keydown", e => {
-                keys[e.key.toLowerCase()] = true;
-                if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) {
-                    startManualReload();
-                }
-            });
-            window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-            canvas.addEventListener("mousemove", e => {
-                const rect = canvas.getBoundingClientRect();
-                mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top;
-            });
-
-            window.addEventListener("mousedown", () => isMouseDown = true);
-            window.addEventListener("mouseup", () => isMouseDown = false);
-
-            setInterval(() => {
+        setInterval(() => {
+            if (canvas.style.display === "block") {
                 colorIdx = (colorIdx + 1) % bgColors.length;
                 canvas.style.backgroundColor = bgColors[colorIdx];
-                let ticker = document.getElementById("caption-ticker");
-                ticker.style.color = gridColors[colorIdx];
-                ticker.style.textShadow = `0 0 8px ${gridColors[colorIdx]}`;
-                if (!bossActive) {
-                    ticker.innerText = loopCaptions[colorIdx];
-                    speakCaptionText(loopCaptions[colorIdx]);
-                }
-            }, 1500);
+                let captionBox = document.getElementById("story-caption-box");
+                captionBox.style.color = gridColors[colorIdx];
+                captionBox.style.borderColor = gridColors[colorIdx];
+                captionBox.style.textShadow = `0 0 8px ${gridColors[colorIdx]}`;
+                if (!bossActive) captionBox.innerText = storyMissions[colorIdx % storyMissions.length];
+            }
+        }, 3000);
 
-            spawnZombie();
-            setInterval(gameLoop, 1000 / 30);
-        }
-
+        window.addEventListener("keydown", e => {
+            keys[e.key.toLowerCase()] = true;
+            if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) reloadTimer = 40;
+        });
+        window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+        canvas.addEventListener("mousemove", e => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top;
+        });
         let isMouseDown = false;
+        canvas.addEventListener("mousedown", () => isMouseDown = true);
+        window.addEventListener("mouseup", () => isMouseDown = false);
 
         function buyGunLevel() {
             if (cash >= cost) {
                 cash -= cost; roundNum++; cost = Math.floor(cost * 1.3);
-                playSound('lvl'); checkWeaponTier(); 
-                if (roundNum % 5 === 0) { triggerMilestoneOverlord(); }
+                checkWeaponTier();
+                if (roundNum % 10 === 0) triggerBossDuel();
                 updateUI();
             }
         }
 
-        function buyMaxAmmo() {
-            if (cash >= ammoCost && reloadTimer === 0) {
-                cash -= ammoCost; ammo = maxAmmo; playSound('lvl'); updateUI();
-                document.getElementById("caption-ticker").innerText = "[AMMO RESTOCKED: INVENTORY MAXED]";
-                speakCaptionText("Ammunition filled.");
-            }
+        function triggerBossDuel() {
+            bossActive = true; enemies = [];
+            let multiplier = roundNum / 10;
+            bosses.push({ x: -60, y: 220, hp: 40 * multiplier, maxHp: 40 * multiplier, size: 28, speed: 1.2 + (multiplier * 0.1) });
+            document.getElementById("story-caption-box").innerText = `[ALERT: DRAGON LEVEL ALPHA BOSS DETECTED - LEVEL ${roundNum} FIGHT!]`;
         }
 
-        function startManualReload() {
-            reloadTimer = 40;
-            document.getElementById("caption-ticker").innerText = "[TACTICAL MAGAZINE RELOAD SEQUENCE INITIATED]";
-        }
-
-        function triggerMilestoneOverlord() {
-            bossActive = true; enemies = []; playSound('boss');
-            let scaleMultiplier = roundNum / 5;
-            bosses.push({
-                x: -50, y: groundY - 30,
-                hp: 20 + (scaleMultiplier * 30), maxHp: 20 + (scaleMultiplier * 30),
-                size: 22 + (scaleMultiplier * 3), speed: 2.2 + (scaleMultiplier * 0.25) 
-            });
-            let message = `[ALERT: OVERLORD BOSS ENGAGED - LEVEL ${roundNum} CRITICAL DEFENSE]`;
-            document.getElementById("caption-ticker").innerText = message;
-            document.getElementById("caption-ticker").style.color = "#ff0000";
-            speakCaptionText("Warning. Overlord encounter initialized.");
-        }
-
+        // CUSTOMIZED FIREARM UPGRADE LIST (Added Plasma Disc Launcher)
         function checkWeaponTier() {
-            let oldMax = maxAmmo;
-            if (roundNum >= 50) { currentWeaponName = "Tactical Mini-Gun"; maxAmmo = 250; }
-            else if (roundNum >= 35) { currentWeaponName = "Laser Railgun"; maxAmmo = 10; }
-            else if (roundNum >= 20) { currentWeaponName = "Plasma Carbine"; maxAmmo = 50; }
-            else if (roundNum >= 10) { currentWeaponName = "M4 Carbine Rifle"; maxAmmo = 60; } 
-            else { currentWeaponName = "Tactical Pistol"; maxAmmo = 30; }
-            
-            if(maxAmmo !== oldMax && reloadTimer === 0) ammo = maxAmmo;
-            document.getElementById("ui-gun-name").innerText = currentWeaponName;
+            bulletSize = 5; bulletPierceCount = 0;
+            if (roundNum >= 20) { currentWeaponName = "Plasma Railgun"; gunRate = 12; gunDamage = 5.0; bulletColor = "#00ffff"; maxAmmo = 25; }
+            else if (roundNum >= 15) { currentWeaponName = "Plasma Disc Launcher"; gunRate = 16; gunDamage = 4.0; bulletColor = "#00ffff"; maxAmmo = 15; bulletSize = 14; bulletPierceCount = 4; } // Added Plasma Discs
+            else if (roundNum >= 10) { currentWeaponName = "M4 Carbine Rifle"; gunRate = 4; gunDamage = 2.2; bulletColor = "#ff3300"; maxAmmo = 45; }
+            else if (roundNum >= 5) { currentWeaponName = "MP5 Submachine Gun"; gunRate = 3; gunDamage = 1.2; bulletColor = "#ffff00"; maxAmmo = 40; }
+            else { currentWeaponName = "M1911 Pistol"; gunRate = 6; gunDamage = 1.0; bulletColor = "#ffff00"; maxAmmo = 30; }
+            ammo = maxAmmo;
         }
 
-        function fireWeapon() {
-            if (reloadTimer > 0 || fireCooldown > 0) return;
-            if (ammo <= 0) { startManualReload(); return; }
+        function hireCompanion(name, color, costValue) {
+            if (cash >= costValue) {
+                cash -= costValue;
+                squad.push({ x: player.x, y: player.y, name: name, color: color, size: 15, cd: 0 });
+                document.getElementById(`btn-${name.toLowerCase()}`).disabled = true;
+                updateUI();
+            }
+        }
 
-            ammo--; playSound('shoot');
-            let bAngle = Math.atan2(mouseY - player.y, mouseX - player.x);
-            let bulletPowerMultiplier = 1 + (roundNum * 0.1);
-            
-            if (currentWeaponName === "M4 Carbine Rifle") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 16, vy: Math.sin(bAngle) * 16, dmg: 2.2 * bulletPowerMultiplier, size: 6, color: "#ff3300" });
-                fireCooldown = 4; 
-            } 
-            else if (currentWeaponName === "Plasma Carbine") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 15, vy: Math.sin(bAngle) * 15, dmg: 3 * bulletPowerMultiplier, size: 9, color: "#00ffff" });
-                fireCooldown = 8;
+        function fireActiveWeapon(sx, sy, targetAngle, isAI = false) {
+            if (!isAI) {
+                if (reloadTimer > 0 || fireCooldown > 0) return;
+                if (ammo <= 0) { reloadTimer = 40; return; }
+                ammo--;
             }
-            else if (currentWeaponName === "Laser Railgun") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 22, vy: Math.sin(bAngle) * 22, dmg: 6 * bulletPowerMultiplier, size: 4, color: "#00ff00", pierce: 2 });
-                fireCooldown = 32;
-            }
-            else if (currentWeaponName === "Tactical Mini-Gun") {
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle - 0.04) * 17, vy: Math.sin(bAngle - 0.04) * 17, dmg: 1 * bulletPowerMultiplier, size: 5, color: "magenta" });
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle + 0.04) * 17, vy: Math.sin(bAngle + 0.04) * 17, dmg: 1 * bulletPowerMultiplier, size: 5, color: "orange" });
-                fireCooldown = 3;
-            }
-            else { 
-                bullets.push({ x: player.x, y: player.y, vx: Math.cos(bAngle) * 14, vy: Math.sin(bAngle) * 14, dmg: 1 * bulletPowerMultiplier, size: 5, color: "#ffff00" });
-                fireCooldown = 6;
-            }
+            playSound('shoot');
+            bullets.push({ 
+                x: sx, y: sy, 
+                vx: Math.cos(targetAngle) * (currentWeaponName === "Plasma Disc Launcher" ? 11 : 15), 
+                vy: Math.sin(targetAngle) * (currentWeaponName === "Plasma Disc Launcher" ? 11 : 15), 
+                dmg: isAI ? 1.0 : gunDamage, 
+                color: isAI ? "#ffff00" : bulletColor, 
+                size: isAI ? 5 : bulletSize,
+                pierce: isAI ? 0 : bulletPierceCount,
+                isAI: isAI 
+            });
+            if (!isAI) fireCooldown = gunRate;
             updateUI();
         }
 
         function spawnZombie() {
-            if (canvas.style.display !== "block") return;
             if (!bossActive) {
-                let eX = -20; 
-                enemies.push({ x: eX, y: groundY - 12, hp: 1 + Math.floor(roundNum * 0.4), speed: 3.7 + (roundNum * 0.25) });
+                let eX = -20, eY = Math.random() * 440;
+                let roll = Math.random();
+                let type = "normal", color = "#39e639", cashVal = 15;
+                
+                if (roll < 0.12) { type = "cyan"; color = "#00ffff"; cashVal = 150; } 
+                else if (roll < 0.57) { type = "orange"; color = "#ff6600"; cashVal = 30; } 
+                
+                enemies.push({ x: eX, y: eY, hp: 2 + Math.floor(kills/15), speed: 1.8 + (kills * 0.04), type: type, color: color, bounty: cashVal });
             }
-            setTimeout(spawnZombie, Math.max(350, 1800 - roundNum * 100));
+            setTimeout(spawnZombie, Math.max(350, 1600 - kills * 35));
         }
 
         function gameLoop() {
@@ -337,107 +198,136 @@
                 if (reloadTimer === 0) { ammo = maxAmmo; updateUI(); }
             }
 
-            player.vx = 0;
-            if (keys['a']) player.vx = -player.speed;
-            if (keys['d']) player.vx = player.speed;
-            if (keys['w'] && player.grounded) { player.vy = -player.jumpPower; player.grounded = false; }
-
-            player.vy += gravity; player.x += player.vx; player.y += player.vy;
-
-            if (player.y >= groundY - player.size) { player.y = groundY - player.size; player.vy = 0; player.grounded = true; }
-            if (player.x < player.size) player.x = player.size;
-            if (player.x > 900 - player.size) player.x = 900 - player.size;
+            if (keys['w'] && player.y > player.size) player.y -= player.speed;
+            if (keys['s'] && player.y < 440 - player.size) player.y += player.speed;
+            if (keys['a'] && player.x > player.size) player.x -= player.speed;
+            if (keys['d'] && player.x < 900 - player.size) player.x += player.speed;
 
             player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            if (isMouseDown) fireActiveWeapon(player.x, player.y, player.angle);
 
-            if (isMouseDown) fireWeapon();
+            squad.forEach((f, idx) => {
+                let leaderX = idx === 0 ? player.x : squad[idx - 1].x;
+                let leaderY = idx === 0 ? player.y : squad[idx - 1].y;
+                let dist = Math.hypot(leaderX - f.x, leaderY - f.y);
+                if (dist > 35) { f.x += ((leaderX - f.x) / dist) * 4.0; f.y += ((leaderY - f.y) / dist) * 4.0; }
+                if (f.cd > 0) f.cd--;
+                if (f.cd === 0 && (enemies.length > 0 || bosses.length > 0)) {
+                    let target = bosses.length > 0 ? bosses : enemies;
+                    if (target) { fireActiveWeapon(f.x, f.y, Math.atan2(target.y - f.y, target.x - f.x), true); f.cd = 25; }
+                }
+            });
 
             bullets.forEach((b, bIdx) => {
                 b.x += b.vx; b.y += b.vy;
-                if (b.x < 0 || b.x > 900 || b.y < 0 || b.y > 500) bullets.splice(bIdx, 1);
+                if (b.x < 0 || b.x > 900 || b.y < 0 || b.y > 440) bullets.splice(bIdx, 1);
 
                 enemies.forEach((e, eIdx) => {
                     if (Math.hypot(b.x - e.x, b.y - e.y) < 16) {
                         e.hp -= b.dmg; playSound('hit');
-                        if(!b.pierce) bullets.splice(bIdx, 1); else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
-                        if (e.hp <= 0) { enemies.splice(eIdx, 1); kills++; cash += 15; updateUI(); }
+                        
+                        // Handle Pierce properties cleanly
+                        if (b.pierce && b.pierce > 0) {
+                            b.pierce--;
+                        } else {
+                            bullets.splice(bIdx, 1);
+                        }
+                        
+                        if (e.hp <= 0) { enemies.splice(eIdx, 1); kills++; cash += e.bounty; updateUI(); }
                     }
                 });
 
                 bosses.forEach((boss, bossIdx) => {
-                    if (Math.hypot(b.x - boss.x, b.y - boss.y) < boss.size + 5) {
-                        boss.hp -= b.dmg; playSound('hit');
-                        if(!b.pierce) bullets.splice(bIdx, 1); else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
-                        if (boss.hp <= 0) {
-                            bosses.splice(bossIdx, 1); kills++; cash += 100; bossActive = false; updateUI();
-                            document.getElementById("caption-ticker").innerText = "[OVERLORD ELIMINATED: THREAT CLEARED]";
-                            speakCaptionText("Target neutralized.");
-                        }
+                    if (Math.hypot(b.x - boss.x, b.y - boss.y) < boss.size + 4) {
+                        boss.hp -= b.dmg; playSound('hit'); 
+                        if (!b.pierce || b.pierce <= 0) bullets.splice(bIdx, 1);
+                        if (boss.hp <= 0) { bosses.splice(bossIdx, 1); kills++; cash += 250; bossActive = false; updateUI(); }
                     }
                 });
             });
 
-            enemies.forEach((e, idx) => {
-                e.x += e.speed;
+            enemies.forEach((e) => {
+                let trackingAngle = Math.atan2(player.y - e.y, player.x - e.x);
+                e.x += Math.cos(trackingAngle) * e.speed; e.y += Math.sin(trackingAngle) * e.speed;
                 if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + 10) {
-                    hp -= 0.6; updateUI(); 
-                    if (hp <= 0) { alert("SQUAD OVERRUN! Operator was defeated."); location.reload(); }
+                    hp -= 0.5; updateUI();
+                    if (hp <= 0) { alert("FBI OPERATION OVERRUN! Game Over."); location.reload(); }
                 }
             });
 
-            bosses.forEach((boss, idx) => {
-                boss.x += boss.speed;
-                if (Math.hypot(player.x - boss.x, player.y - boss.y) < player.size + boss.size - 5) {
+            bosses.forEach((boss) => {
+                let trackingAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
+                boss.x += Math.cos(trackingAngle) * boss.speed; boss.y += Math.sin(trackingAngle) * boss.speed;
+                if (Math.hypot(player.x - boss.x, player.y - boss.y) < player.size + boss.size) {
                     hp -= 1.5; updateUI();
-                    if (hp <= 0) { alert("BOSS CRUSHED THE ARENA! Game Over."); location.reload(); }
+                    if (hp <= 0) { alert("ALPHA OVERLORD CRUSHED PLAYER! Game Over."); location.reload(); }
                 }
             });
 
-            ctx.clearRect(0, 0, 900, 500);
-
+            ctx.clearRect(0, 0, 900, 440);
             ctx.strokeStyle = gridColors[colorIdx] + "22"; ctx.lineWidth = 1;
-            for(let i=0; i<900; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,groundY); ctx.stroke(); }
-            for(let j=0; j<groundY; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(900,j); ctx.stroke(); }
+            for(let i=0; i<900; i+=45) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,440); ctx.stroke(); }
+            for(let j=0; j<440; j+=45) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(900,j); ctx.stroke(); }
 
-            ctx.fillStyle = "#151515"; ctx.fillRect(0, groundY, 900, 70);
-            ctx.strokeStyle = gridColors[colorIdx]; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(900, groundY); ctx.stroke();
+            ctx.fillStyle = "rgba(255, 0, 0, 0.15)"; ctx.fillRect(0, 0, 35, 440);
+            ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 2; ctx.strokeRect(0, 0, 35, 440);
 
-            ctx.fillStyle = "rgba(255, 51, 0, 0.2)"; ctx.fillRect(0, 0, 30, groundY);
-            ctx.strokeStyle = "#ff3300"; ctx.lineWidth = 2; ctx.strokeRect(0, 0, 30, groundY);
+            squad.forEach(f => {
+                ctx.fillStyle = f.color; ctx.beginPath(); ctx.arc(f.x, f.y, f.size, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#000"; ctx.font = "bold 10px Arial"; ctx.fillText(f.name.substring(0,2).toUpperCase(), f.x-6, f.y+4);
+            });
 
-            ctx.save(); ctx.translate(player.x, player.y);
-            ctx.save(); ctx.rotate(player.angle); ctx.fillStyle = "#555"; ctx.fillRect(0, -3, 24, 6); ctx.restore();
-            ctx.fillStyle = player.color; ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-            ctx.fillStyle = "#e0a96d"; ctx.beginPath(); ctx.arc(0, -6, player.size * 0.4, 0, Math.PI*2); ctx.fill();
+            ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
+            ctx.fillStyle = "#555"; ctx.fillRect(5, -3, 22, 6);
+            ctx.fillStyle = "#ff00ff"; ctx.beginPath(); ctx.arc(0, 0, player.size, 0, Math.PI*2); ctx.fill();
             ctx.restore();
 
-            bullets.forEach(b => { ctx.fillStyle = b.color; ctx.fillRect(b.x - Math.floor(b.size/2), b.y - Math.floor(b.size/2), b.size, b.size); });
+            // Draw Projectiles (Renders giant discs for weapon level 15)
+            bullets.forEach(b => { 
+                ctx.fillStyle = b.color; 
+                if (b.size > 5) {
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+                } else {
+                    ctx.fillRect(b.x-2, b.y-2, 5, 5); 
+                }
+            });
 
             enemies.forEach(e => {
-                ctx.fillStyle = "#39e639"; ctx.beginPath(); ctx.arc(e.x, e.y, 11, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "red"; ctx.fillRect(e.x-3, e.y-4, 2, 2); ctx.fillRect(e.x+2, e.y-4, 2, 2);
+                ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, 11, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "red"; ctx.fillRect(e.x - 10, e.y - 15, 20, 3);
+                ctx.fillStyle = "green"; ctx.fillRect(e.x - 10, e.y - 15, Math.max(0, e.hp * 4), 3);
             });
 
             bosses.forEach(boss => {
                 ctx.fillStyle = "#9900ff"; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.size, 0, Math.PI*2); ctx.fill();
-                ctx.strokeStyle = "#ff00ff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.size + 4, 0, Math.PI*2); ctx.stroke();
-                ctx.fillStyle = "yellow"; ctx.fillRect(boss.x - 6, boss.y - 8, 4, 4); ctx.fillRect(boss.x + 2, boss.y - 8, 4, 4);
-                ctx.fillStyle = "red"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 15, boss.size * 2, 5);
-                ctx.fillStyle = "yellow"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 15, (boss.hp / boss.maxHp) * (boss.size * 2), 5);
+                ctx.fillStyle = "red"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 10, boss.size * 2, 4);
+                ctx.fillStyle = "yellow"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 10, (boss.hp / boss.maxHp) * (boss.size * 2), 4);
             });
+
+            requestAnimationFrame(gameLoop);
         }
 
         function updateUI() {
             document.getElementById("ui-hp").innerText = `${Math.floor(hp)}/100`;
-            document.getElementById("ui-round").innerText = roundNum;
             document.getElementById("ui-cash").innerText = `$${cash}`;
+            document.getElementById("ui-gun").innerText = currentWeaponName;
+            document.getElementById("ui-round").innerText = roundNum;
             document.getElementById("ui-ammo").innerText = reloadTimer > 0 ? "RELOADING" : `${ammo}/${maxAmmo}`;
             document.getElementById("ui-kills").innerText = kills;
-            document.getElementById("buy-btn").innerText = `UPGRADE GUN LEVEL ($${cost})`;
-            document.getElementById("buy-btn").disabled = cash < cost;
-            document.getElementById("ammo-btn").disabled = cash < ammoCost || ammo === maxAmmo;
+            document.getElementById("wpn-up").innerText = `UPGRADE GUN TIER ($${cost})`;
+            document.getElementById("wpn-up").disabled = cash < cost;
+            
+            document.getElementById("btn-aadam").disabled = cash < 100 || squad.some(s => s.name === 'Aadam');
+            document.getElementById("btn-yakoub").disabled = cash < 200 || squad.some(s => s.name === 'Yakoub');
+            document.getElementById("btn-daiyon").disabled = cash < 300 || squad.some(s => s.name === 'Daiyon');
+            document.getElementById("btn-arafat").disabled = cash < 400 || squad.some(s => s.name === 'Arafat');
+            document.getElementById("btn-naythan").disabled = cash < 500 || squad.some(s => s.name === 'Naythan');
         }
+
+        canvas.style.display = "block";
+        spawnZombie();
+        requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
