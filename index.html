@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>The Skittlini Zombini.io  | 2D Action Arena</title>
+    <title>The Skittlini&Zombini.io | 2D Action Arena</title>
     <style>
         body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         #ui-box { background: rgba(15, 20, 15, 0.9); padding: 12px; border-bottom: 3px solid #00ff00; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.2); }
@@ -9,7 +9,6 @@
         .badge { color: #ffff00; text-shadow: 0 0 8px #ffff00; }
         #caption-ticker { font-size: 20px; font-weight: bold; text-transform: uppercase; margin-top: 5px; height: 30px; letter-spacing: 1px; display: none; }
         
-        /* Menu, Cutscene, and Upgrade Layouts */
         .screen { padding: 40px; max-width: 750px; margin: auto; height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .char-btn { padding: 15px; margin: 8px; background: #1a1a1a; color: #00ff00; border: 2px solid #00ff00; cursor: pointer; font-size: 16px; width: 220px; text-transform: uppercase; font-weight: bold; }
         .char-btn:hover { background: #00ff00; color: black; box-shadow: 0 0 15px #00ff00; }
@@ -17,25 +16,55 @@
         .next-btn { background: #ff00ff; color: #fff; border: none; padding: 12px 30px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 0 10px #ff00ff; text-transform: uppercase; }
         .next-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
         
-        /* Upgrade Control Panel Panel */
-        #upgrade-panel { display: none; justify-content: center; margin-top: 5px; }
-        .up-btn { background: #ff3300; color: white; border: none; padding: 10px 25px; font-size: 16px; cursor: pointer; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px rgba(255,51,0,0.5); }
+        #upgrade-panel { display: none; justify-content: center; margin-top: 5px; gap: 20px; }
+        .up-btn { background: #ff3300; color: white; border: none; padding: 10px 25px; font-size: 16px; cursor: pointer; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px rgba(255,51,0,0.5); text-transform: uppercase; }
         .up-btn:disabled { background: #444; color: #777; cursor: not-allowed; box-shadow: none; }
         .up-btn:hover:not(:disabled) { background: #ff5533; box-shadow: 0 0 15px #ff3300; }
+        .ammo-btn { background: #00ffff; color: black; box-shadow: 0 0 10px rgba(0,255,255,0.5); }
+        .ammo-btn:hover:not(:disabled) { background: white; box-shadow: 0 0 15px white; }
+
+        /* Integrated Instructions Layout Panel */
+        .instruction-card { background: #111411; border: 2px solid #00ff00; padding: 15px; margin-bottom: 20px; text-align: left; font-size: 13px; line-height: 1.5; color: #fff; width: 100%; box-sizing: border-box; }
+        .instruction-card h3 { color: #00ffff; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <!-- INSTANT CAPTION STORY SCREEN -->
-    <div id="story-screen" class="screen">
+    <!-- INSTANT CAPTION STORY SCREEN WITH TEXT-TO-SPEECH -->
+    <div id="story-screen" class="screen" onclick="activateVoiceEngine()">
         <h2 style="color: #ff00ff; font-size: 32px; letter-spacing: 2px; margin-top: 0;">🍬 THE SKITTLINI ZOMBINI OR ALIENILI 🍬</h2>
+        <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">[ CLICK SCREEN TO ENABLE VOICE NARRATION ]</div>
         <div id="story-text">Loading subtitles...</div>
         <button id="story-btn" class="next-btn" onclick="nextStoryLine()">NEXT CAPTION</button>
     </div>
 
-    <!-- OPERATOR MENU SCREEN -->
+    <!-- OPERATOR MENU SCREEN WITH INTEGRATED GAME MANUAL -->
     <div id="menu-screen" class="screen" style="display:none;">
-        <h1 style="color: #00ff00; font-size: 28px; margin-top: 0; text-transform: uppercase;">Select Your Ground Operator</h1>
+        <h1 style="color: #00ff00; font-size: 26px; margin-top: 0; text-transform: uppercase;">Operator Selector & Manual</h1>
+        
+        <!-- HIGH VISIBILITY OPERATIONAL INSTRUCTIONS -->
+        <div class="instruction-card">
+            <h3>🎮 FIELD COMBAT MANUAL (HOW TO PLAY):</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <strong>⌨️ MOVEMENT CONTROLS:</strong><br>
+                    • <strong>A / D Keys</strong> — Run Left and Right across steel lane<br>
+                    • <strong>W Key</strong> — Leap upwards into air space platforms<br>
+                    • <strong>R Key</strong> — Initiate manual magazine reload delay cycle
+                </div>
+                <div>
+                    <strong>🎯 COMBAT SYSTEM & ECONOMY:</strong><br>
+                    • <strong>MOUSE CURSOR</strong> — Pivot weapon muzzle orientation 360°<br>
+                    • <strong>LEFT CLICK</strong> — Fire custom firearm rounds stream<br>
+                    • <strong>UPGRADES</strong> — Spend <strong>$15 per kill cash</strong> below the canvas field to unlock Shotguns, Plasma, and Mini-Guns!
+                </div>
+            </div>
+            <div style="color: #ff3300; font-weight: bold; margin-top: 10px; text-align: center; text-transform: uppercase;">
+                ⚠️ ALERT: GIANT MUTANT ELITE BOSS DUELS SPAWN AUTOMATICALLY EVERY 5 LEVEL UPGRADES!
+            </div>
+        </div>
+
+        <div style="font-weight: bold; color: #ff00ff; margin-bottom: 10px;">CHOOSE DEPLOYMENT OPERATOR TO ENTER GRID:</div>
         <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 500px;">
             <button class="char-btn" onclick="launchGroundUnit('Shuceeb', '#ff00ff')">Shuceeb</button>
             <button class="char-btn" onclick="launchGroundUnit('Aadam', '#ff0055')">Aadam</button>
@@ -59,9 +88,10 @@
     <!-- SIDE-SCROLLING CANVAS -->
     <canvas id="gameCanvas" width="900" height="420"></canvas>
 
-    <!-- SHOP PANEL -->
+    <!-- DOUBLE CONTROL PANEL SHOP -->
     <div id="upgrade-panel">
         <button id="buy-btn" class="up-btn" onclick="buyGunLevel()">UPGRADE GUN LEVEL ($100)</button>
+        <button id="ammo-btn" class="up-btn ammo-btn" onclick="buyMaxAmmo()">RESTOCK MAX AMMO ($75)</button>
     </div>
 
     <!-- LIVE ACTION CAPTIONS FEED -->
@@ -69,15 +99,35 @@
 
     <script>
         const storyLines = [
-            "[SCENE 1: THE DISCOVERY]\n\nSHUCEEB WAS RETURNING FROM THE SHOP WITH A MASSIVE COAL BAG OF SKITTLES FOR THE BOYS WHEN HE ENCOUNTERED THE FIRST SPIDER INFESTATION UNIT.",
-            "[SCENE 2: TOXIC SPORES OUTBREAK]\n\nTHE MUTANT VIRUS SPREAD RAPIDLY THROUGH THE BLOCK, TURNING CITIZENS INTO THE INVASION COMPRESSION UNIT.",
-            "[SCENE 3: ARENA MOBILIZATION]\n\nTHE SQUAD DECIDED TO FORTIFY A HIGH-DENSITY FLAT GROUND PLATFORM ARENA FIELD.",
-            "[SCENE 4: STRATEGIC DEPLOYMENT]\n\nWELCOME TO THE SKITTLINI ZOMBINI OR ALIENILI ARENA SURVIVAL GRID. CLEANSE THE LEFT STRIKE ZONE MAP CORRIDOR NOW!"
+            "Shuceeb was returning from the shop with a massive coal bag of Skittles for the boys when he encountered the first spider infestation unit.",
+            "The mutant virus spread rapidly through the block, turning citizens into the invasion compression unit.",
+            "The squad decided to fortify a high density flat ground platform arena field.",
+            "Welcome to the Skittlini Zombini or Alienili arena survival grid. Cleanse the left strike zone map corridor now!"
         ];
         
         let storyIdx = 0;
+        let voiceEnabled = false;
+
+        function activateVoiceEngine() {
+            voiceEnabled = true;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function speakCaptionText(text) {
+            if ('speechSynthesis' in window && voiceEnabled) {
+                window.speechSynthesis.cancel(); 
+                let cleanText = text.replace(/\[.*?\]/g, "").trim(); 
+                let utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 1.0; utterance.pitch = 0.9; 
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
         function showCaption() {
-            document.getElementById("story-text").innerText = storyLines[storyIdx];
+            let textValue = storyLines[storyIdx];
+            document.getElementById("story-text").innerText = textValue.toUpperCase();
+            speakCaptionText(textValue);
+
             if (storyIdx === storyLines.length - 1) {
                 document.getElementById("story-btn").innerText = "OPEN OPERATOR FILES";
             } else {
@@ -90,8 +140,12 @@
             if (storyIdx < storyLines.length) {
                 showCaption();
             } else {
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 document.getElementById("story-screen").style.display = "none";
                 document.getElementById("menu-screen").style.display = "flex";
+                
+                // Read manual alert line out loud automatically when loading menu
+                speakCaptionText("Field manual loaded. Choose an operator.");
             }
         }
 
@@ -120,13 +174,19 @@
                 osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.25);
                 gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'boss') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
             }
         }
 
-        let hp = 100, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0, currentWeaponName = "Tactical Pistol", cash = 0, cost = 100;
+        let hp = 100, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0, currentWeaponName = "Tactical Pistol", cash = 0, cost = 100, ammoCost = 75;
         let player = { x: 450, y: 320, vx: 0, vy: 0, size: 18, speed: 5, jumpPower: 12, grounded: true, angle: 0, name: "---", color: "#ff00ff" };
-        let bullets = [], enemies = [], keys = {}, mouseX = 450, mouseY = 250;
+        let bullets = [], enemies = [], bosses = [], keys = {}, mouseX = 450, mouseY = 250;
         const gravity = 0.5, groundY = 350;
+        let bossActive = false;
 
         const bgColors = ["#111411", "#1a0b1a", "#0b151a", "#1a160b", "#1a0b0b"];
         const gridColors = ["#00ff00", "#ff00ff", "#00ffff", "#ffff00", "#ff0000"];
@@ -155,8 +215,7 @@
             window.addEventListener("keydown", e => {
                 keys[e.key.toLowerCase()] = true;
                 if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) {
-                    reloadTimer = 40;
-                    document.getElementById("caption-ticker").innerText = "[TACTICAL MAGAZINE RELOAD SEQUENCE INITIATED]";
+                    startManualReload();
                 }
             });
             window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
@@ -174,7 +233,10 @@
                 let ticker = document.getElementById("caption-ticker");
                 ticker.style.color = gridColors[colorIdx];
                 ticker.style.textShadow = `0 0 8px ${gridColors[colorIdx]}`;
-                ticker.innerText = loopCaptions[colorIdx];
+                if (!bossActive) {
+                    ticker.innerText = loopCaptions[colorIdx];
+                    speakCaptionText(loopCaptions[colorIdx]);
+                }
             }, 1500);
 
             spawnZombie();
@@ -186,22 +248,54 @@
         function buyGunLevel() {
             if (cash >= cost) {
                 cash -= cost; roundNum++; cost = Math.floor(cost * 1.3);
-                playSound('lvl'); checkWeaponTier(); updateUI();
+                playSound('lvl'); checkWeaponTier(); 
+                if (roundNum % 5 === 0) { triggerMilestoneOverlord(); }
+                updateUI();
             }
         }
 
+        function buyMaxAmmo() {
+            if (cash >= ammoCost && reloadTimer === 0) {
+                cash -= ammoCost; ammo = maxAmmo; playSound('lvl'); updateUI();
+                document.getElementById("caption-ticker").innerText = "[AMMO RESTOCKED: INVENTORY MAXED]";
+                speakCaptionText("Ammunition filled.");
+            }
+        }
+
+        function startManualReload() {
+            reloadTimer = 40;
+            document.getElementById("caption-ticker").innerText = "[TACTICAL MAGAZINE RELOAD SEQUENCE INITIATED]";
+        }
+
+        function triggerMilestoneOverlord() {
+            bossActive = true; enemies = []; playSound('boss');
+            let scaleMultiplier = roundNum / 5;
+            bosses.push({
+                x: -50, y: groundY - 30,
+                hp: 20 + (scaleMultiplier * 30), maxHp: 20 + (scaleMultiplier * 30),
+                size: 22 + (scaleMultiplier * 3), speed: 0.9 + (scaleMultiplier * 0.12)
+            });
+            let message = `[ALERT: OVERLORD BOSS ENGAGED - LEVEL ${roundNum} CRITICAL DEFENSE]`;
+            document.getElementById("caption-ticker").innerText = message;
+            document.getElementById("caption-ticker").style.color = "#ff0000";
+            speakCaptionText("Warning. Overlord encounter initialized.");
+        }
+
         function checkWeaponTier() {
-            if (roundNum >= 50) { currentWeaponName = "Tactical Mini-Gun"; maxAmmo = 100; }
-            else if (roundNum >= 35) { currentWeaponName = "Laser Railgun"; maxAmmo = 5; }
-            else if (roundNum >= 20) { currentWeaponName = "Plasma Carbine"; maxAmmo = 25; }
-            else if (roundNum >= 10) { currentWeaponName = "Remington Shotgun"; maxAmmo = 6; }
-            else { currentWeaponName = "Tactical Pistol"; maxAmmo = 15; }
+            let oldMax = maxAmmo;
+            if (roundNum >= 50) { currentWeaponName = "Tactical Mini-Gun"; maxAmmo = 250; }
+            else if (roundNum >= 35) { currentWeaponName = "Laser Railgun"; maxAmmo = 10; }
+            else if (roundNum >= 20) { currentWeaponName = "Plasma Carbine"; maxAmmo = 50; }
+            else if (roundNum >= 10) { currentWeaponName = "Remington Shotgun"; maxAmmo = 12; }
+            else { currentWeaponName = "Tactical Pistol"; maxAmmo = 30; }
+            
+            if(maxAmmo !== oldMax && reloadTimer === 0) ammo = maxAmmo;
             document.getElementById("ui-gun-name").innerText = currentWeaponName;
         }
 
         function fireWeapon() {
             if (reloadTimer > 0 || fireCooldown > 0) return;
-            if (ammo <= 0) { reloadTimer = 40; return; }
+            if (ammo <= 0) { startManualReload(); return; }
 
             ammo--; playSound('shoot');
             let bAngle = Math.atan2(mouseY - player.y, mouseX - player.x);
@@ -235,8 +329,10 @@
 
         function spawnZombie() {
             if (canvas.style.display !== "block") return;
-            let eX = -20; 
-            enemies.push({ x: eX, y: groundY - 12, hp: 1 + Math.floor(roundNum * 0.4), speed: 1.5 + (roundNum * 0.15) });
+            if (!bossActive) {
+                let eX = -20; 
+                enemies.push({ x: eX, y: groundY - 12, hp: 1 + Math.floor(roundNum * 0.4), speed: 1.5 + (roundNum * 0.15) });
+            }
             setTimeout(spawnZombie, Math.max(350, 1800 - roundNum * 100));
         }
 
@@ -270,8 +366,19 @@
                     if (Math.hypot(b.x - e.x, b.y - e.y) < 16) {
                         e.hp -= b.dmg; playSound('hit');
                         if(!b.pierce) bullets.splice(bIdx, 1); else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
-
                         if (e.hp <= 0) { enemies.splice(eIdx, 1); kills++; cash += 15; updateUI(); }
+                    }
+                });
+
+                bosses.forEach((boss, bossIdx) => {
+                    if (Math.hypot(b.x - boss.x, b.y - boss.y) < boss.size + 5) {
+                        boss.hp -= b.dmg; playSound('hit');
+                        if(!b.pierce) bullets.splice(bIdx, 1); else { b.pierce--; if(b.pierce <= 0) bullets.splice(bIdx, 1); }
+                        if (boss.hp <= 0) {
+                            bosses.splice(bossIdx, 1); kills++; cash += 100; bossActive = false; updateUI();
+                            document.getElementById("caption-ticker").innerText = "[OVERLORD ELIMINATED: THREAT CLEARED]";
+                            speakCaptionText("Target neutralized.");
+                        }
                     }
                 });
             });
@@ -281,6 +388,14 @@
                 if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + 10) {
                     hp -= 0.5; updateUI();
                     if (hp <= 0) { alert("SQUAD OVERRUN! Operator was defeated."); location.reload(); }
+                }
+            });
+
+            bosses.forEach((boss, idx) => {
+                boss.x += boss.speed;
+                if (Math.hypot(player.x - boss.x, player.y - boss.y) < player.size + boss.size - 5) {
+                    hp -= 1.2; updateUI();
+                    if (hp <= 0) { alert("BOSS CRUSHED THE ARENA! Game Over."); location.reload(); }
                 }
             });
 
@@ -309,6 +424,14 @@
                 ctx.fillStyle = "#39e639"; ctx.beginPath(); ctx.arc(e.x, e.y, 11, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = "red"; ctx.fillRect(e.x-3, e.y-4, 2, 2); ctx.fillRect(e.x+2, e.y-4, 2, 2);
             });
+
+            bosses.forEach(boss => {
+                ctx.fillStyle = "#9900ff"; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.size, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = "#ff00ff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.size + 4, 0, Math.PI*2); ctx.stroke();
+                ctx.fillStyle = "yellow"; ctx.fillRect(boss.x - 6, boss.y - 8, 4, 4); ctx.fillRect(boss.x + 2, boss.y - 8, 4, 4);
+                ctx.fillStyle = "red"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 15, boss.size * 2, 5);
+                ctx.fillStyle = "yellow"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 15, (boss.hp / boss.maxHp) * (boss.size * 2), 5);
+            });
         }
 
         function updateUI() {
@@ -319,6 +442,7 @@
             document.getElementById("ui-kills").innerText = kills;
             document.getElementById("buy-btn").innerText = `UPGRADE GUN LEVEL ($${cost})`;
             document.getElementById("buy-btn").disabled = cash < cost;
+            document.getElementById("ammo-btn").disabled = cash < ammoCost || ammo === maxAmmo;
         }
     </script>
 </body>
