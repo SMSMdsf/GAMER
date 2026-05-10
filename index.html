@@ -39,7 +39,7 @@
     <div id="menu-screen" class="screen" style="display:none;">
         <h1 style="color: #00ff00; font-size: 32px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">SELECT LOGISTICS OPERATOR</h1>
         <div class="char-grid">
-            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff')">Shuceeb<div class="ability-desc">Rainbow Beam<br>2.65x Super Speed</div></div>
+            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff')">Shuceeb<div class="ability-desc">1: Rainbow Beam<br>2: Super Beam</div></div>
             <div class="char-card" onclick="spawnAgent('Aadam', '#ff0055')">Aadam<div class="ability-desc">Fighter Robot<br>Laser Strike Drones</div></div>
             <div class="char-card" onclick="spawnAgent('Yakoub', '#ffcc00')">Yakoub<div class="ability-desc">Plasma Rifle<br>1.5s Minigun Bursts</div></div>
             <div class="char-card" onclick="spawnAgent('Daiyon', '#9900ff')">Daiyon<div class="ability-desc">Proximity C4 Bombs<br>Heavy Plasma Cannon</div></div>
@@ -67,7 +67,8 @@
     <!-- UPGRADE ARMORY OPTIONS -->
     <div id="upgrade-panel">
         <button id="wpn-up" class="up-btn" style="border-color: #ff3300; color: #ff3300;" onclick="upgradeGuns()">UPGRADE ARSENAL EQUIPMENT ($100)</button>
-        <button id="ability-btn" class="up-btn" style="border-color: #ff00ff; color: #ff00ff;" onclick="castSpecialAbility()">USE SPECIAL ABILITY (Drains Stamina)</button>
+        <button id="ability-btn-1" class="up-btn" style="border-color: #ff00ff; color: #ff00ff;" onclick="castSpecialAbility(1)">1: Rainbow Beam (40 Stamina)</button>
+        <button id="ability-btn-2" class="up-btn" style="border-color: #00ffff; color: #00ffff;" onclick="castSpecialAbility(2)">2: Super Beam (60 Stamina)</button>
     </div>
 
     <script>
@@ -106,7 +107,7 @@
                 document.getElementById("story-box").innerText = scenarioScripts[scriptPointer].toUpperCase();
                 triggerRobotSpeech(scenarioScripts[scriptPointer]);
                 if (scriptPointer === scenarioScripts.length - 1) {
-                    document.getElementById("story-btn").innerText = "ACCESS FBI RECRUITMENT Menu";
+                    document.getElementById("story-btn").innerText = "ACCESS FBI RECRUITMENT MENU";
                 }
             } else {
                 if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -145,10 +146,9 @@
             }
         }
 
-        // BALANCED CORE HUD CONFIG (STAMINA ENHANCED TO 150)
         let hp = 250, cash = 0, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0, cost = 100, stamina = 150, maxStamina = 150;
         let currentWeaponName = "M1911 Pistol", gunRate = 6, gunDamage = 1.0, bulletColor = "#ffff00", bulletSize = 5, bulletPierceCount = 0;
-        let player = { x: 650, y: 200, size: 17, speed: 4.5, angle: 0, name: "---", color: "#ff00ff" }; 
+        let player = { x: 600, y: 200, size: 17, speed: 4.5, angle: 0, name: "---", color: "#ff00ff" }; 
         let bullets = [], enemies = [], bosses = [], keys = {}, mouseX = 450, mouseY = 200;
         let bossActive = false;
 
@@ -174,10 +174,14 @@
                 if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) reloadTimer = 40;
             });
             window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+            
+            // ACCURATE AIM FIX FOR FULLSCREEN VIEWS
             canvas.addEventListener("mousemove", e => {
                 const rect = canvas.getBoundingClientRect();
-                mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top;
+                mouseX = e.clientX - rect.left; 
+                mouseY = e.clientY - rect.top; 
             });
+            
             window.addEventListener("mousedown", () => isMouseDown = true);
             window.addEventListener("mouseup", () => isMouseDown = false);
 
@@ -188,7 +192,7 @@
                 captionBox.style.color = gridColors[colorIdx];
                 captionBox.style.borderColor = gridColors[colorIdx];
                 captionBox.style.textShadow = `0 0 8px ${gridColors[colorIdx]}`;
-                if (!bossActive) captionBox.innerText = "[OPERATION: FBI OUTBREAK - HOLD BACK THE SPRINTING COLUMNS]";
+                if (!bossActive) captionBox.innerText = "[OPERATION: FBI OUTBREAK - COMBAT ZONE SECURED]";
             }, 1500);
 
             spawnZombie();
@@ -206,17 +210,22 @@
             }
         }
 
-        function castSpecialAbility() {
-            if (stamina >= 40) {
+        function castSpecialAbility(type) {
+            if (type === 1 && stamina >= 40) {
                 stamina -= 40;
-                if (player.name === "Shuceeb") {
-                    player.speed = 12.0; // 2.65x Super Speed activation block
-                    currentWeaponName = "Rainbow Skittle Beam";
-                    bulletColor = "magenta"; gunRate = 2;
-                    setTimeout(() => { player.speed = 4.5; checkWeaponTier(); }, 4000);
-                }
-                updateUI();
+                currentWeaponName = "Rainbow Beam";
+                bulletColor = "magenta"; gunRate = 3; gunDamage = 4.0;
+                setTimeout(() => { checkWeaponTier(); }, 5000);
+            } 
+            else if (type === 2 && stamina >= 60) {
+                stamina -= 60;
+                currentWeaponName = "Super Beam";
+                bulletColor = "#00ffff"; bulletSize = 25; gunDamage = 20.0;
+                // Instant heavy blast load sequence
+                bullets.push({ x: player.x, y: player.y, vx: Math.cos(player.angle) * 12, vy: Math.sin(player.angle) * 12, dmg: 20.0, color: "#00ffff", size: 25, pierce: 10 });
+                setTimeout(() => { checkWeaponTier(); }, 1000);
             }
+            updateUI();
         }
 
         function triggerBossDuel() {
@@ -242,7 +251,6 @@
                 let roll = Math.random();
                 let type = "green", color = "#39e639", cashVal = 15, dmgVal = 1;
                 
-                // USER RATIO CONFIG MAPPINGS (Green=1, Orange=3, Cyan=5, Red=7)
                 if (roll < 0.15) { type = "red"; color = "#ff0000"; cashVal = 150; dmgVal = 7; } 
                 else if (roll < 0.45) { type = "cyan"; color = "#00ffff"; cashVal = 60; dmgVal = 5; } 
                 else if (roll < 0.75) { type = "orange"; color = "#ff6600"; cashVal = 30; dmgVal = 3; } 
@@ -259,20 +267,21 @@
                 if (reloadTimer === 0) { ammo = maxAmmo; updateUI(); }
             }
 
-            // Accelerated Stamina processing node matrix
             let moving = keys['w'] || keys['s'] || keys['a'] || keys['d'];
             if (moving) {
-                stamina = Math.min(maxStamina, stamina + 0.15); // Standard rate walking
+                stamina = Math.min(maxStamina, stamina + 0.15); 
                 if (keys['w'] && player.y > player.size) player.y -= player.speed;
                 if (keys['s'] && player.y < canvas.height - player.size) player.y += player.speed;
                 if (keys['a'] && player.x > player.size) player.x -= player.speed;
                 if (keys['d'] && player.x < canvas.width - player.size) player.x += player.speed;
             } else {
-                stamina = Math.min(maxStamina, stamina + 0.35); // Anchor mode accelerated charging
+                stamina = Math.min(maxStamina, stamina + 0.35); 
             }
             updateUI();
 
+            // FIXED MOUSE DIRECTION ANGLE CALCULATION MATRIX
             player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            
             if (isMouseDown) {
                 if (reloadTimer > 0 || fireCooldown > 0) {} 
                 else if (ammo <= 0) { reloadTimer = 40; } 
@@ -303,12 +312,11 @@
                 });
             });
 
-            // SPRINTING LEFT SPAWN ENTRY MOVEMENT LOOPS
             enemies.forEach((e) => {
                 let trackingAngle = Math.atan2(player.y - e.y, player.x - e.x);
                 e.x += Math.cos(trackingAngle) * e.speed; e.y += Math.sin(trackingAngle) * e.speed;
                 if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + 10) {
-                    hp -= e.dmg; updateUI(); // Takes variable specific damage based on type config
+                    hp -= e.dmg; updateUI(); 
                     if (hp <= 0) { alert("FBI DEFENSE EXECUTED. Resetting grid data."); location.reload(); }
                 }
             });
@@ -317,7 +325,7 @@
                 let trackingAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
                 boss.x += Math.cos(trackingAngle) * boss.speed; boss.y += Math.sin(trackingAngle) * boss.speed;
                 if (Math.hypot(player.x - boss.x, player.y - boss.y) < player.size + boss.size) {
-                    hp -= 10; updateUI(); // Purple Overlord takes exactly 10 points per tick
+                    hp -= 10; updateUI(); 
                     if (hp <= 0) { alert("OVERLORD OVERRUN BASE AREA. Resetting system."); location.reload(); }
                 }
             });
@@ -327,7 +335,6 @@
             for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
             for(let j=0; j<canvas.height; j+=50) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width,j); ctx.stroke(); }
 
-            // Highlight Lane Gate Perimeter
             ctx.fillStyle = "rgba(255, 0, 0, 0.12)"; ctx.fillRect(0, 0, 40, canvas.height);
             ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 2; ctx.strokeRect(0, 0, 40, canvas.height);
 
@@ -360,7 +367,8 @@
             document.getElementById("ui-gun").innerText = currentWeaponName;
             document.getElementById("ui-round").innerText = roundNum;
             document.getElementById("ui-ammo").innerText = reloadTimer > 0 ? "RELOADING" : `${ammo}/${maxAmmo}`;
-            document.getElementById("ability-btn").disabled = stamina < 40;
+            document.getElementById("ability-btn-1").disabled = stamina < 40;
+            document.getElementById("ability-btn-2").disabled = stamina < 60;
         }
     </script>
 </body>
