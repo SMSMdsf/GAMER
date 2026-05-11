@@ -15,7 +15,7 @@
         .screen { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; padding: 40px; background: #050505; }
         #story-box { width: 85vw; max-width: 1100px; font-size: 24px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 8px #ff00ff; min-height: 200px; text-transform: uppercase; font-weight: bold; text-align: left; background: #111411; border: 3px solid #ff00ff; padding: 35px; box-shadow: 0 0 35px rgba(255,0,255,0.3); box-sizing: border-box; }
         
-        .next-btn { background: #ff00ff; color: #fff; border: none; padding: 15px 45px; font-size: 20px; cursor: pointer; font-weight: bold; margin-top: 35px; box-shadow: 0 0 15px #ff00ff; text-transform: uppercase; border-radius: 4px; }
+        .next-btn { background: #ff00ff; color: #fff; border: none; padding: 15px 45px; font-size: 20px; cursor: pointer; font-weight: bold; margin-top: 35px; box-shadow: 0 0 10px #ff00ff; text-transform: uppercase; border-radius: 4px; }
         .next-btn:hover { background: #fff; color: #000; box-shadow: 0 0 25px #fff; }
         #story-caption-box { width: 100vw; background: #111411; border-top: 3px solid #ff00ff; font-size: 16px; font-weight: bold; text-transform: uppercase; color: #ffffff; text-shadow: 0 0 8px #ff00ff; box-sizing: border-box; height: 8vh; display: none; align-items: center; justify-content: center; line-height: 1.3; padding: 0 20px; }
         
@@ -27,23 +27,23 @@
 </head>
 <body>
 
-    <!-- INSTANT CUTSCENE SCREEN WITH VOIDS TRACKING -->
+    <!-- INSTANT START MENU SCREEN -->
     <div id="cutscene-screen" class="screen">
         <h2 style="color: #ff00ff; font-size: 42px; letter-spacing: 3px; margin: 0 0 10px 0; text-shadow: 0 0 10px #ff00ff;">🚨 FBI OUTBREAK 🚨</h2>
-        <div id="story-box">SHUCEEB AND AADAM WERE TECH AGENTS AND FBI. PREPARING DATA PACKET DEPLOYMENT...</div>
-        <button id="story-btn" class="next-btn" onclick="progressStory()">NEXT CAPTION</button>
+        <div id="story-box">PREPARE DATA DEPLOYMENT<br><br>SHUCEEB AND AADAM ARE HIGH TECH FBI AGENTS MOBILIZING AGAINST A DRAGON LEVEL BIO THREAT OUTBREAK. SYSTEM DEPLOYMENT MATRIX IS STANDING BY.</div>
+        <button id="story-btn" class="next-btn" onclick="openOperatorMenu()">NEXT CAPTION</button>
     </div>
 
-    <!-- SELECTION PANEL MENU -->
+    <!-- OPERATOR SELECTION MENU -->
     <div id="menu-screen" class="screen" style="display:none;">
         <h1 style="color: #00ff00; font-size: 32px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">SELECT LOGISTICS OPERATOR</h1>
         <div class="char-grid">
-            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff')">Shuceeb<div class="ability-desc">1: Rainbow Beam<br>2: Super Speed</div></div>
-            <div class="char-card" onclick="spawnAgent('Aadam', '#ff0055')">Aadam<div class="ability-desc">1: Fighter Robot<br>2: Strike Drones</div></div>
-            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffcc00')">Yakoub<div class="ability-desc">1: Plasma Strike<br>2: Overdrive Minigun</div></div>
-            <div class="char-card" onclick="spawnAgent('Daiyon', '#9900ff')">Daiyon<div class="ability-desc">1: Proximity C4<br>2: Heavy Plasma Core</div></div>
-            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66')">Arafat<div class="ability-desc">1: Auto Heal Field<br>2: RPG Launcher</div></div>
-            <div class="char-card" onclick="spawnAgent('Naythan', '#ff6600')">Naythan<div class="ability-desc">1: Katana Arc Slash<br>2: 65.7% Crit Mod</div></div>
+            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff')">Shuceeb<div class="ability-desc">1: Rainbow Beam<br>2: Super Speed (2.65x)</div></div>
+            <div class="char-card" onclick="spawnAgent('Aadam', '#ff0055')">Aadam<div class="ability-desc">1: Summon Robot Punch<br>2: Drone Laser Swarm</div></div>
+            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffcc00')">Yakoub<div class="ability-desc">1: Laser Gun Mode<br>2: 1.5s Minigun Blast</div></div>
+            <div class="char-card" onclick="spawnAgent('Daiyon', '#9900ff')">Daiyon<div class="ability-desc">1: Proximity C4 Bomb<br>2: Heavy Plasma Core</div></div>
+            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66')">Arafat<div class="ability-desc">1: Active Auto Heal<br>2: Explosive RPG Rocket</div></div>
+            <div class="char-card" onclick="spawnAgent('Naythan', '#ff6600')">Naythan<div class="ability-desc">1: Katana Arc Slash<br>2: 65.7% Insta-Kill Mod</div></div>
         </div>
     </div>
 
@@ -52,53 +52,28 @@
         <div>AGENT: <span id="ui-name" style="color: #ff00ff;">---</span></div>
         <div>HEALTH: <span id="ui-hp" style="color: #ff3333;">250/250</span></div>
         <div>STAMINA: <span id="ui-stamina" style="color: #ffff00;">150/150</span></div>
-        <div>ARMORY CASH: <span id="ui-cash" style="color: #00ffff;">$0</span></div>
-        <div>WEAPON LAYER: <span id="ui-gun" style="color: #00ffff;">M1911 Pistol</span> (Lv.<span id="ui-round">1</span>)</div>
+        <div>CASH: <span id="ui-cash" style="color: #00ffff;">$0</span></div>
+        <div>GUN WEAPON: <span id="ui-gun" style="color: #00ffff;">M1911 Pistol</span> (Lv.<span id="ui-round">1</span>)</div>
         <div>AMMO: <span id="ui-ammo" style="color: #ff00ff;">30/30</span></div>
     </div>
 
-    <!-- SIMULATION COMBAT VIEWPORT -->
+    <!-- MAIN GAME CANVAS -->
     <canvas id="survivalCanvas" style="display:none;"></canvas>
 
-    <!-- HUD CAPTIONS FEED BOX -->
+    <!-- IN-GAME HUD SUBTITLE BRIEF FEED -->
     <div id="story-caption-box">[LANE ANOMALY SECURED: DETECTING LEFT SIGNALS]</div>
 
-    <!-- UNIQUE OPERATOR ABILITY STORES -->
+    <!-- UPGRADE ARMORY OPTIONS -->
     <div id="upgrade-panel">
         <button id="wpn-up" class="up-btn" style="border-color: #ff3300; color: #ff3300;" onclick="upgradeGuns()">UPGRADE ARSENAL EQUIPMENT ($100)</button>
-        <button id="ability-btn-1" class="up-btn" style="border-color: #ff00ff; color: #ff00ff;" onclick="castSpecialAbility(1)">Ability 1 (40 Stamina)</button>
-        <button id="ability-btn-2" class="up-btn" style="border-color: #00ffff; color: #00ffff;" onclick="castSpecialAbility(2)">Ability 2 (60 Stamina)</button>
+        <button id="ability-btn-1" class="up-btn" style="border-color: #ff00ff; color: #ff00ff;" onclick="castSpecialAbility(1)">1: ABILITY ONE (40 Stamina)</button>
+        <button id="ability-btn-2" class="up-btn" style="border-color: #00ffff; color: #00ffff;" onclick="castSpecialAbility(2)">2: ABILITY TWO (60 Stamina)</button>
     </div>
 
     <script>
-        const scenarioScripts = [
-            "Shuceeb and Aadam were Tech agents and FBI.",
-            "Shuceeb was driving to a location that Aadam is saying.",
-            "Shuceeb got off into the car and kicked the door open!",
-            "He went down straight into the dark basement while Aadam is guiding him over the comms what to do.",
-            "Shuceeb found a strange organic alien egg containing slimy gooey stuff all over it.",
-            "Suddenly the alien egg broke and it charged right at shuceeb! But luckily, Shuceeb drew his pistol and blasted it, while aadam took a picture of it and theorized that it was a dragon level threat.",
-            "Shuceeb used one of his secret powers and teleported straight back to Aadam tech cyber base, and told Naythan, Arafat, Daiyon, and Yakoub to prepare yourself to kill these aliens, meanwhile Aadam is finding how to stop it or cure it!"
-        ];
-        
-        let scriptPointer = 0;
-
-        // INSTANT CUTSCENE RE-WRITE WITHOUT ANY VOICE AUDIO CALL LOOPS
-        window.onload = function() {
-            document.getElementById("story-box").innerText = scenarioScripts[scriptPointer].toUpperCase();
-        };
-
-        function progressStory() {
-            scriptPointer++;
-            if (scriptPointer < scenarioScripts.length) {
-                document.getElementById("story-box").innerText = scenarioScripts[scriptPointer].toUpperCase();
-                if (scriptPointer === scenarioScripts.length - 1) {
-                    document.getElementById("story-btn").innerText = "ACCESS FBI RECRUITMENT MENU";
-                }
-            } else {
-                document.getElementById("cutscene-screen").style.display = "none";
-                document.getElementById("menu-screen").style.display = "flex";
-            }
+        function openOperatorMenu() {
+            document.getElementById("cutscene-screen").style.display = "none";
+            document.getElementById("menu-screen").style.display = "flex";
         }
 
         const canvas = document.getElementById("survivalCanvas");
@@ -116,29 +91,15 @@
         }
         window.addEventListener('resize', resizeFullViewportCanvas);
 
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function runFX(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'fire') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-            } else if (type === 'hit') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(95, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            }
-        }
-
         let hp = 250, cash = 0, kills = 0, roundNum = 1, ammo = 30, maxAmmo = 30, reloadTimer = 0, fireCooldown = 0, cost = 100, stamina = 150, maxStamina = 150;
         let currentWeaponName = "M1911 Pistol", gunRate = 6, gunDamage = 1.0, bulletColor = "#ffff00", bulletSize = 5, bulletPierceCount = 0;
         let player = { x: 600, y: 200, size: 17, speed: 5.5, angle: 0, name: "---", color: "#ff00ff" }; 
-        let bullets = [], enemies = [], bosses = [], companionRobots = [], keys = {}, mouseX = 450, mouseY = 200;
-        let bossActive = false, speedPowerActive = false;
+        let bullets = [], enemies = [], bosses = [], keys = {}, mouseX = 450, mouseY = 200;
+        let bossActive = false, activeMinigunTimer = 0, activeShieldValue = 0, c4Explosives = [], currentActiveAARobot = null, activeDrones = [];
+
+        const bgColors = ["#111411", "#1a0b1a", "#0b151a", "#1a160b", "#1a0b0b"];
+        const gridColors = ["#00ff00", "#ff00ff", "#00ffff", "#ffff00", "#ff0000"];
+        let colorIdx = 0;
 
         function spawnAgent(name, color) {
             player.name = name; player.color = color;
@@ -150,18 +111,9 @@
             document.getElementById("story-caption-box").style.display = "flex";
             document.getElementById("upgrade-panel").style.display = "flex";
             
-            // Adjust shop panel naming profiles based on exact class load choice
-            let ab1 = document.getElementById("ability-btn-1");
-            let ab2 = document.getElementById("ability-btn-2");
-            if (name === "Shuceeb") { ab1.innerText = "1: Rainbow Beam"; ab2.innerText = "2: Super Speed"; }
-            if (name === "Aadam") { ab1.innerText = "1: Summon Fighter Bot"; ab2.innerText = "2: Laser Drones"; }
-            if (name === "Yakoub") { ab1.innerText = "1: Plasma Overload"; ab2.innerText = "2: Burst Minigun"; }
-            if (name === "Daiyon") { ab1.innerText = "1: Plant Proximity C4"; ab2.innerText = "2: Plasma Core Cannon"; }
-            if (name === "Arafat") { ab1.innerText = "1: Health Pulse Field"; ab2.innerText = "2: RPG Rocket Launcher"; }
-            if (name === "Naythan") { ab1.innerText = "1: Katana Arc Slash"; ab2.innerText = "2: 65.7% Precision Crit"; }
-
             canvas.style.display = "block";
             resizeFullViewportCanvas();
+            checkWeaponTier();
             
             window.addEventListener("keydown", e => {
                 keys[e.key.toLowerCase()] = true;
@@ -171,8 +123,7 @@
             
             canvas.addEventListener("mousemove", e => {
                 const rect = canvas.getBoundingClientRect();
-                mouseX = e.clientX - rect.left; 
-                mouseY = e.clientY - rect.top; 
+                mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top; 
             });
             
             window.addEventListener("mousedown", () => isMouseDown = true);
@@ -185,7 +136,7 @@
                 captionBox.style.color = gridColors[colorIdx];
                 captionBox.style.borderColor = gridColors[colorIdx];
                 captionBox.style.textShadow = `0 0 8px ${gridColors[colorIdx]}`;
-                if (!bossActive) captionBox.innerText = `[OPERATION: FBI OUTBREAK - WEAPON TIER LEVEL ${roundNum} RUNNING]`;
+                if (!bossActive) captionBox.innerText = "[OPERATION: FBI OUTBREAK - COMBAT ZONE SECURED]";
             }, 1500);
 
             spawnZombie();
@@ -198,67 +149,74 @@
             if (cash >= cost) {
                 cash -= cost; roundNum++; cost = Math.floor(cost * 1.3);
                 checkWeaponTier();
-                // FIXED BOSS ROUND DELAY TRIGGERS AT LEVEL 5, 10, 15, ETC
+                // FIXED: Trigger Boss at level 5, 10, 15, 20, etc.
                 if (roundNum % 5 === 0) triggerBossDuel();
                 updateUI();
             }
         }
 
-        function castSpecialAbility(slot) {
-            // UNIQUE LOAD ENGINE MAPPINGS FOR ALL OF THE SQUAD CHARACTERS
-            if (player.name === "Shuceeb") {
-                if (slot === 1 && stamina >= 40) {
-                    stamina -= 40; currentWeaponName = "Rainbow Beam"; bulletColor = "magenta"; gunRate = 3; gunDamage = 4.0;
-                    setTimeout(() => { checkWeaponTier(); }, 5000);
-                } else if (slot === 2 && stamina >= 60) {
-                    stamina -= 60; speedPowerActive = true; player.speed = 11.5; // Moves 2.65x faster
-                    setTimeout(() => { player.speed = 5.5; speedPowerActive = false; }, 4000);
-                }
-            }
-            else if (player.name === "Aadam") {
-                if (slot === 1 && stamina >= 50) {
-                    stamina -= 50;
-                    companionRobots.push({ x: player.x - 40, y: fixedGroundLineY - 20, size: 20, speed: 4.5, hp: 15 });
-                } else if (slot === 2 && stamina >= 40) {
-                    stamina -= 40;
-                    for (let d = 0; d < 360; d += 45) {
-                        bullets.push({ x: player.x, y: player.y, vx: Math.cos(d) * 12, vy: Math.sin(d) * 12, dmg: 3, color: "#ff0055", size: 6 });
-                    }
-                }
-            }
-            else if (player.name === "Yakoub") {
-                if (slot === 1 && stamina >= 45) {
-                    stamina -= 45; currentWeaponName = "Plasma Overload Blaster"; bulletColor = "#ffcc00"; bulletSize = 15; gunDamage = 9;
+        function checkWeaponTier() {
+            bulletSize = 5; bulletPierceCount = 0;
+            
+            // Assign character base setups
+            if (player.name === "Aadam") { currentWeaponName = "Laser Drone Batteries"; gunRate = 6; gunDamage = 1.0; bulletColor = "#ff0055"; maxAmmo = 999; ammo = 999; return; }
+            if (player.name === "Naythan") { currentWeaponName = "Katana Blade Strike"; gunRate = 12; gunDamage = 3.0; bulletColor = "#ff6600"; maxAmmo = 999; ammo = 999; return; }
+            if (player.name === "Arafat") { currentWeaponName = "RPG Launcher"; gunRate = 22; gunDamage = 6.0; bulletColor = "#00ff66"; maxAmmo = 5; ammo = 5; return; }
+
+            if (roundNum >= 20) { currentWeaponName = "Plasma Railgun"; gunRate = 12; gunDamage = 5.0; bulletColor = "#00ffff"; maxAmmo = 25; }
+            else if (roundNum >= 15) { currentWeaponName = "Plasma Disc Launcher"; gunRate = 16; gunDamage = 4.0; bulletColor = "#00ffff"; maxAmmo = 15; bulletSize = 14; bulletPierceCount = 4; } 
+            else if (roundNum >= 10) { currentWeaponName = "M4 Carbine Rifle"; gunRate = 4; gunDamage = 2.2; bulletColor = "#ff3300"; maxAmmo = 45; }
+            else if (roundNum >= 5) { currentWeaponName = "MP5 Submachine Gun"; gunRate = 3; gunDamage = 1.2; bulletColor = "#ffff00"; maxAmmo = 40; }
+            else { currentWeaponName = "M1911 Pistol"; gunRate = 6; gunDamage = 1.0; bulletColor = "#ffff00"; maxAmmo = 30; }
+            ammo = maxAmmo;
+        }
+
+        // FIXED: EVERY SQUAD MEMBER ABILITY IS LOADED CORRECTLY
+        function castSpecialAbility(type) {
+            if (type === 1 && stamina >= 40) {
+                stamina -= 40;
+                if (player.name === "Shuceeb") {
+                    currentWeaponName = "Rainbow Beam"; bulletColor = "magenta"; gunRate = 2; gunDamage = 4.0;
                     setTimeout(() => { checkWeaponTier(); }, 4000);
-                } else if (slot === 2 && stamina >= 55) {
-                    stamina -= 55; currentWeaponName = "Overdrive Minigun"; gunRate = 2; maxAmmo = 100; ammo = 100;
-                    setTimeout(() => { checkWeaponTier(); }, 3500);
-                }
-            }
-            else if (player.name === "Daiyon") {
-                if (slot === 1 && stamina >= 35) {
-                    stamina -= 35;
-                    enemies.forEach(e => { if (e.x < player.x) e.hp -= 15; runFX('hit'); }); // Proximity blast clear lane
-                } else if (slot === 2 && stamina >= 50) {
-                    stamina -= 50;
-                    bullets.push({ x: player.x, y: player.y, vx: -16, vy: 0, dmg: 25, color: "#9900ff", size: 20, pierce: 5 });
-                }
-            }
-            else if (player.name === "Arafat") {
-                if (slot === 1 && stamina >= 40) {
-                    stamina -= 40; hp = Math.min(250, hp + 75); // Auto Heal activation link
-                } else if (slot === 2 && stamina >= 50) {
-                    stamina -= 50;
-                    bullets.push({ x: player.x, y: player.y, vx: -12, vy: 0, dmg: 35, color: "#00ff66", size: 30, explosion: 90 });
-                }
-            }
-            else if (player.name === "Naythan") {
-                if (slot === 1 && stamina >= 30) {
-                    stamina -= 30;
-                    enemies.forEach(e => { if (Math.abs(e.x - player.x) < 120) e.hp -= 20; }); // Close range sword perimeter slash
-                } else if (slot === 2 && stamina >= 45) {
-                    stamina -= 45; gunDamage = 99; // 65.7% Insta kill crit boost mod link
+                } else if (player.name === "Aadam") {
+                    currentActiveAARobot = { x: player.x, y: fixedGroundLineY - 20, speed: -4, size: 20 };
+                    document.getElementById("story-caption-box").innerText = "[AADAM: AI ROBOT MARCHING TO ONE-SHOT LANE]";
+                } else if (player.name === "Yakoub") {
+                    currentWeaponName = "Laser Gun Mode"; bulletColor = "#ffcc00"; gunRate = 4; gunDamage = 2.5;
                     setTimeout(() => { checkWeaponTier(); }, 4000);
+                } else if (player.name === "Daiyon") {
+                    c4Explosives.push({ x: mouseX, y: fixedGroundLineY - 5, radius: 120 });
+                    document.getElementById("story-caption-box").innerText = "[DAIYON: C4 DETONATOR CHARGE PLANTED]";
+                } else if (player.name === "Arafat") {
+                    hp = Math.min(250, hp + 60);
+                    document.getElementById("story-caption-box").innerText = "[ARAFAT: AUTO HEAL MATRIX ACTIVATE +60 HP]";
+                } else if (player.name === "Naythan") {
+                    bullets.push({ x: player.x, y: player.y, vx: -5, vy: 0, isSword: true, radius: 75 });
+                    bullets.push({ x: player.x, y: player.y, vx: 5, vy: 0, isSword: true, radius: 75 });
+                    document.getElementById("story-caption-box").innerText = "[NAYTHAN: KATANA 360 ARC BLADE SLASH]";
+                }
+            } 
+            else if (type === 2 && stamina >= 60) {
+                stamina -= 60;
+                if (player.name === "Shuceeb") {
+                    player.speed = 11.5; // 2.65x Super Speed
+                    document.getElementById("story-caption-box").innerText = "[SHUCEEB: SUPER SPEED ENGAGED]";
+                    setTimeout(() => { player.speed = 5.5; }, 4000);
+                } else if (player.name === "Aadam") {
+                    activeDrones.push({ angle: 0, radius: 45 }, { angle: Math.PI, radius: 45 });
+                    setTimeout(() => { activeDrones = []; }, 5000);
+                } else if (player.name === "Yakoub") {
+                    currentWeaponName = "Minigun Overdrive"; bulletColor = "#ffff00"; gunRate = 1; gunDamage = 1.5; activeMinigunTimer = 45;
+                    setTimeout(() => { checkWeaponTier(); }, 1500);
+                } else if (player.name === "Daiyon") {
+                    currentWeaponName = "Heavy Plasma Cannon"; bulletColor = "#9900ff"; bulletSize = 16; gunDamage = 6.0; gunRate = 10;
+                    setTimeout(() => { checkWeaponTier(); }, 4000);
+                } else if (player.name === "Arafat") {
+                    currentWeaponName = "RPG Payload"; bulletColor = "#00ff66"; bulletSize = 12; gunDamage = 10.0;
+                    bullets.push({ x: player.x, y: player.y, vx: -10, vy: 0, isRPG: true, size: 12, dmg: 10.0 });
+                    setTimeout(() => { checkWeaponTier(); }, 500);
+                } else if (player.name === "Naythan") {
+                    document.getElementById("story-caption-box").innerText = "[NAYTHAN: 65.7% INSTA-KILL PRECISION INJECTED]";
                 }
             }
             updateUI();
@@ -267,18 +225,8 @@
         function triggerBossDuel() {
             bossActive = true; enemies = [];
             let multiplier = roundNum / 5;
-            bosses.push({ x: -60, y: fixedGroundLineY - 28, hp: 35 * multiplier, maxHp: 35 * multiplier, size: 28, speed: 1.4 });
-            document.getElementById("story-caption-box").innerText = `[🚨 THREAT EXTREME: MILESTONE BOSS ENGAGED ON ROUND ${roundNum}]`;
-        }
-
-        function checkWeaponTier() {
-            bulletSize = 5; bulletPierceCount = 0; gunDamage = 1.0 + (roundNum * 0.2);
-            if (roundNum >= 20) { currentWeaponName = "Plasma Railgun"; gunRate = 12; gunDamage += 5.0; bulletColor = "#00ffff"; maxAmmo = 25; }
-            else if (roundNum >= 15) { currentWeaponName = "Plasma Disc Launcher"; gunRate = 16; gunDamage += 4.0; bulletColor = "#00ffff"; maxAmmo = 15; bulletSize = 14; bulletPierceCount = 4; } 
-            else if (roundNum >= 10) { currentWeaponName = "M4 Carbine Rifle"; gunRate = 4; gunDamage += 2.2; bulletColor = "#ff3300"; maxAmmo = 45; }
-            else if (roundNum >= 5) { currentWeaponName = "MP5 Submachine Gun"; gunRate = 3; gunDamage += 1.2; bulletColor = "#ffff00"; maxAmmo = 40; }
-            else { currentWeaponName = "M1911 Pistol"; gunRate = 6; bulletColor = "#ffff00"; maxAmmo = 30; }
-            ammo = maxAmmo;
+            bosses.push({ x: -60, y: fixedGroundLineY - 28, hp: 45 * multiplier, maxHp: 45 * multiplier, size: 28, speed: 1.5 });
+            document.getElementById("story-caption-box").innerText = `[ROUND ${roundNum} MILESTONE: ALPHA OVERLORD THREAT ENGAGED]`;
         }
 
         function spawnZombie() {
@@ -292,9 +240,9 @@
                 else if (roll < 0.45) { type = "cyan"; color = "#00ffff"; cashVal = 60; dmgVal = 5; } 
                 else if (roll < 0.75) { type = "orange"; color = "#ff6600"; cashVal = 30; dmgVal = 3; } 
                 
-                enemies.push({ x: eX, y: eY, hp: 2 + Math.floor(kills/12), speed: 3.6, type: type, color: color, bounty: cashVal, dmg: dmgVal });
+                enemies.push({ x: eX, y: eY, hp: 2 + Math.floor(kills/15), speed: 3.5, type: type, color: color, bounty: cashVal, dmg: dmgVal });
             }
-            setTimeout(spawnZombie, Math.max(350, 1600 - kills * 30));
+            setTimeout(spawnZombie, Math.max(350, 1600 - kills * 35));
         }
 
         function gameLoop() {
@@ -316,25 +264,39 @@
             player.y = fixedGroundLineY - player.size;
             updateUI();
 
-            // FIXED DEAD ACCURATE MOUSE TARGET POINT CROSSHAIR ANGLE Matrix
+            // FIXED TARGET CROSSHAIR AIM VECTOR
             player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
             
-            if (isMouseDown) {
+            if (isMouseDown || activeMinigunTimer > 0) {
+                if (activeMinigunTimer > 0) activeMinigunTimer--;
                 if (reloadTimer > 0 || fireCooldown > 0) {} 
-                else if (ammo <= 0) { reloadTimer = 40; } 
+                else if (ammo <= 0 && player.name !== "Aadam" && player.name !== "Naythan") { reloadTimer = 40; } 
                 else {
-                    ammo--; runFX('fire');
-                    bullets.push({ x: player.x, y: player.y, vx: Math.cos(player.angle) * 16, vy: Math.sin(player.angle) * 16, dmg: gunDamage, color: bulletColor, size: bulletSize, pierce: bulletPierceCount });
+                    if (player.name !== "Aadam" && player.name !== "Naythan") ammo--;
+                    bullets.push({ x: player.x, y: player.y, vx: Math.cos(player.angle) * 15, vy: Math.sin(player.angle) * 15, dmg: gunDamage, color: bulletColor, size: bulletSize, pierce: bulletPierceCount, name: player.name });
                     fireCooldown = gunRate; updateUI();
                 }
             }
 
-            companionRobots.forEach((bot, bIdx) => {
-                bot.x -= bot.speed;
+            // AI Robot processing mechanics
+            if (currentActiveAARobot) {
+                currentActiveAARobot.x += currentActiveAARobot.speed;
                 enemies.forEach((e, eIdx) => {
-                    if (Math.abs(bot.x - e.x) < 25) { e.hp -= 10; bot.hp--; runFX('hit'); }
+                    if (Math.abs(e.x - currentActiveAARobot.x) < 30) {
+                        enemies.splice(eIdx, 1); kills++; cash += e.bounty; updateUI();
+                    }
                 });
-                if (bot.hp <= 0 || bot.x < 0) companionRobots.splice(bIdx, 1);
+                if (currentActiveAARobot.x < -50) currentActiveAARobot = null;
+            }
+
+            // Orbit Drones tracking loop matrix
+            activeDrones.forEach(dr => {
+                dr.angle += 0.1;
+                let dx = player.x + Math.cos(dr.angle) * dr.radius;
+                let dy = player.y + Math.sin(dr.angle) * dr.radius;
+                if (Math.random() < 0.1 && enemies.length > 0) {
+                    bullets.push({ x: dx, y: dy, vx: -14, vy: 0, dmg: 1.0, color: "#00ffff", size: 4 });
+                }
             });
 
             bullets.forEach((b, bIdx) => {
@@ -342,17 +304,36 @@
                 if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(bIdx, 1);
 
                 enemies.forEach((e, eIdx) => {
-                    if (Math.hypot(b.x - e.x, b.y - e.y) < 16) {
-                        e.hp -= b.dmg; runFX('hit');
-                        if (b.pierce && b.pierce > 0) b.pierce--; else bullets.splice(bIdx, 1);
+                    let hitRadius = b.isSword ? b.radius : 16;
+                    if (Math.hypot(b.x - e.x, b.y - e.y) < hitRadius) {
+                        let totalDamage = b.dmg;
+                        if (b.name === "Naythan" && Math.random() < 0.657) totalDamage = 999; // 65.7% Insta-Kill chance
+                        
+                        e.hp -= totalDamage;
+                        if (!b.pierce && !b.isSword) bullets.splice(bIdx, 1);
+                        
+                        if (b.isRPG) { // Explode radiuses
+                            enemies.forEach(ne => { if(Math.hypot(b.x - ne.x, b.y - ne.y) < 80) ne.hp -= 5; });
+                        }
+
                         if (e.hp <= 0) { enemies.splice(eIdx, 1); kills++; cash += e.bounty; updateUI(); }
                     }
                 });
 
                 bosses.forEach((boss, bossIdx) => {
                     if (Math.hypot(b.x - boss.x, b.y - boss.y) < boss.size + 4) {
-                        boss.hp -= b.dmg; runFX('hit'); bullets.splice(bIdx, 1);
+                        boss.hp -= b.dmg; if (!b.pierce) bullets.splice(bIdx, 1);
                         if (boss.hp <= 0) { bosses.splice(bossIdx, 1); kills++; cash += 500; bossActive = false; updateUI(); }
+                    }
+                });
+            });
+
+            // C4 Trap loops
+            c4Explosives.forEach((bomb, bIdx) => {
+                enemies.forEach(e => {
+                    if (Math.abs(e.x - bomb.x) < 20) {
+                        enemies.forEach(ne => { if (Math.hypot(bomb.x - ne.x, bomb.y - ne.y) < bomb.radius) ne.hp -= 15; });
+                        c4Explosives.splice(bIdx, 1);
                     }
                 });
             });
@@ -361,7 +342,7 @@
                 e.x += e.speed; 
                 if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + 10) {
                     hp -= e.dmg; updateUI(); 
-                    if (hp <= 0) { alert("FBI DEFENSE OVERRUN. Resetting session area grid."); location.reload(); }
+                    if (hp <= 0) { alert("FBI OPERATION OVERRUN. RE-LOADING GRID."); location.reload(); }
                 }
             });
 
@@ -369,24 +350,37 @@
                 boss.x += boss.speed;
                 if (Math.hypot(player.x - boss.x, player.y - boss.y) < player.size + boss.size) {
                     hp -= 10; updateUI(); 
-                    if (hp <= 0) { alert("OVERLORD OVERRUN BASE HUB. Resetting data."); location.reload(); }
+                    if (hp <= 0) { alert("OVERLORD BREACHED VECTOR CORE. RESETTING."); location.reload(); }
                 }
             });
 
+            // RENDER ENG LAYOUT
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = gridColors[colorIdx] + "18"; ctx.lineWidth = 1;
             for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
             for(let j=0; j<canvas.height; j+=50) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width,j); ctx.stroke(); }
 
-            // Base ground floor graphics
             ctx.fillStyle = "#151515"; ctx.fillRect(0, fixedGroundLineY, canvas.width, canvas.height - fixedGroundLineY);
             ctx.strokeStyle = gridColors[colorIdx]; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, fixedGroundLineY); ctx.lineTo(canvas.width, fixedGroundLineY); ctx.stroke();
 
             ctx.fillStyle = "rgba(255, 0, 0, 0.12)"; ctx.fillRect(0, 0, 40, fixedGroundLineY);
             ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 2; ctx.strokeRect(0, 0, 40, fixedGroundLineY);
 
-            companionRobots.forEach(bot => {
-                ctx.fillStyle = "#ff0055"; ctx.fillRect(bot.x - bot.size/2, bot.y - bot.size/2, bot.size, bot.size);
+            // Draw C4 traps visual ring indicators
+            c4Explosives.forEach(bomb => {
+                ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(bomb.x, bomb.y, 6, 0, Math.PI*2); ctx.fill();
+            });
+
+            // Draw Aadam Fighter Robot
+            if (currentActiveAARobot) {
+                ctx.fillStyle = "#ff0055"; ctx.fillRect(currentActiveAARobot.x - 15, currentActiveAARobot.y - 15, 30, 30);
+            }
+
+            // Draw Drones
+            activeDrones.forEach(dr => {
+                let dx = player.x + Math.cos(dr.angle) * dr.radius;
+                let dy = player.y + Math.sin(dr.angle) * dr.radius;
+                ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(dx, dy, 5, 0, Math.PI*2); ctx.fill();
             });
 
             ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
@@ -397,14 +391,5 @@
             bullets.forEach(b => { 
                 ctx.fillStyle = b.color; 
                 if (b.size > 5) { ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI*2); ctx.fill(); } 
-                else { ctx.fillRect(b.x-2, b.y-2, 5, 5); }
-            });
-
-            enemies.forEach(e => {
-                ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, 11, 0, Math.PI*2); ctx.fill();
-            });
-
-            bosses.forEach(boss => {
-                ctx.fillStyle = "#9900ff"; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.size, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "red"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 10, boss.size * 2, 4);
-                ctx.fillStyle = "yellow"; ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 10, (boss.hp / boss.maxHp) * (boss.size * 2),
+                else if (b.isSword) { ctx.strokeStyle = "orange"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2); ctx.stroke(); }
+                else {
