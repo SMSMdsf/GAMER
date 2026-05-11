@@ -5,7 +5,7 @@
     <style>
         html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: #050505; color: #00ff00; font-family: 'Courier New', monospace; overflow: hidden; user-select: none; box-sizing: border-box; }
         #ui-box { background: rgba(15, 20, 15, 0.95); padding: 15px; border-bottom: 3px solid #00ff00; display: none; justify-content: space-around; font-size: 18px; font-weight: bold; align-items: center; box-shadow: 0 4px 15px rgba(0,255,0,0.4); height: 8vh; box-sizing: border-box; }
-        canvas { background: #111411; border: none; cursor: crosshair; display: none; width: 100vw; height: 72vh; transition: background-color 1.5s ease; margin: 0; box-sizing: border-box; }
+        canvas { background: #111411; border: none; cursor: crosshair; display: block; width: 100vw; height: 72vh; transition: background-color 1.5s ease; margin: 0; box-sizing: border-box; }
         #upgrade-panel { display: none; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; background: #151815; border-top: 3px solid #00ff00; height: 12vh; padding: 5px; box-sizing: border-box; }
         
         .up-btn { background: #222; color: #00ff00; border: 2px solid #00ff00; padding: 8px 16px; font-size: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; border-radius: 4px; }
@@ -23,6 +23,7 @@
         .char-card { background: #111411; border: 2px solid #00ff00; padding: 15px; width: 200px; cursor: pointer; border-radius: 6px; font-weight: bold; text-transform: uppercase; }
         .char-card:hover { background: #00ff00; color: #000; box-shadow: 0 0 15px #00ff00; }
         .ability-desc { font-size: 10px; color: #aaa; margin-top: 5px; font-weight: normal; }
+        .manual-layout { width: 100vw; background: #111411; border-top: 1px solid #00ff00; font-size: 11px; color: #fff; text-align: center; height: 4vh; line-height: 4vh; display: none; }
     </style>
 </head>
 <body>
@@ -41,12 +42,12 @@
     <div id="menu-screen" class="screen" style="display:none;">
         <h1 style="color: #00ff00; font-size: 32px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">SELECT LOGISTICS OPERATOR</h1>
         <div class="char-grid">
-            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff')">Shuceeb<div class="ability-desc">1: Rainbow Beam<br>2: Super Speed</div></div>
-            <div class="char-card" onclick="spawnAgent('Aadam', '#ff0055')">Aadam<div class="ability-desc">1: Fighter Robot<br>2: Strike Drones</div></div>
-            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffcc00')">Yakoub<div class="ability-desc">1: Plasma Laser<br>2: Minigun Mode</div></div>
-            <div class="char-card" onclick="spawnAgent('Daiyon', '#9900ff')">Daiyon<div class="ability-desc">1: Plasma Cannon<br>2: Deploy C4 Bombs</div></div>
-            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66')">Arafat<div class="ability-desc">1: Auto Heal<br>2: RPG Launcher</div></div>
-            <div class="char-card" onclick="spawnAgent('Naythan', '#ff6600')">Naythan<div class="ability-desc">1: Katana Slash<br>2: Precision Crit</div></div>
+            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff')">Shuceeb<div class="ability-desc">[1]: Rainbow Beam<br>[2]: Super Speed</div></div>
+            <div class="char-card" onclick="spawnAgent('Aadam', '#ff0055')">Aadam<div class="ability-desc">[1]: Fighter Robot<br>[2]: Strike Drones</div></div>
+            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffcc00')">Yakoub<div class="ability-desc">[1]: Plasma Laser<br>[2]: Minigun Mode</div></div>
+            <div class="char-card" onclick="spawnAgent('Daiyon', '#9900ff')">Daiyon<div class="ability-desc">[1]: Plasma Cannon<br>[2]: Deploy C4 Bombs</div></div>
+            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66')">Arafat<div class="ability-desc">[1]: Auto Heal<br>[2]: RPG Launcher</div></div>
+            <div class="char-card" onclick="spawnAgent('Naythan', '#ff6600')">Naythan<div class="ability-desc">[1]: Katana Slash<br>[2]: Precision Crit</div></div>
         </div>
     </div>
 
@@ -63,14 +64,17 @@
     <!-- MAIN VIEWPORT -->
     <canvas id="survivalCanvas" style="display:none;"></canvas>
 
+    <!-- HOTKEY MANUAL GUIDE -->
+    <div id="manual-bar" class="manual-layout">🎹 PRESS [1] FOR ABILITY 1 || PRESS [2] FOR ABILITY 2 || PRESS [R] TO RELOAD AMMO</div>
+
     <!-- STATUS FOOTER -->
     <div id="story-caption-box">[COMBAT ZONE SECURED]</div>
 
     <!-- CONTROL PANEL SHOP -->
     <div id="upgrade-panel">
         <button id="wpn-up" class="up-btn" style="border-color: #ff3300; color: #ff3300;" onclick="upgradeGuns()">UPGRADE ARSENAL ($100)</button>
-        <button id="ability-btn-1" class="up-btn" style="border-color: #ff00ff; color: #ff00ff;" onclick="castSpecialAbility(1)">ABILITY 1</button>
-        <button id="ability-btn-2" class="up-btn" style="border-color: #00ffff; color: #00ffff;" onclick="castSpecialAbility(2)">ABILITY 2</button>
+        <button id="ability-btn-1" class="up-btn" style="border-color: #ff00ff; color: #ff00ff;" onclick="castSpecialAbility(1)">ABILITY 1 [1]</button>
+        <button id="ability-btn-2" class="up-btn" style="border-color: #00ffff; color: #00ffff;" onclick="castSpecialAbility(2)">ABILITY 2 [2]</button>
     </div>
 
     <script>
@@ -86,7 +90,6 @@
         
         let scriptPointer = 0;
 
-        // FIXED CAPTION SCENE NAVIGATOR MATRIX
         function progressStory() {
             scriptPointer++;
             if (scriptPointer < scenarioScripts.length) {
@@ -110,7 +113,7 @@
         function resizeFullViewportCanvas() {
             if (canvas.style.display === "block") {
                 canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight * 0.72;
+                canvas.height = window.innerHeight * 0.68; // Minor tweak to fit keyboard guide bar
                 fixedGroundLineY = canvas.height - 40;
                 player.y = fixedGroundLineY - player.size;
             }
@@ -132,18 +135,25 @@
             document.getElementById("ui-box").style.display = "flex";
             document.getElementById("story-caption-box").style.display = "flex";
             document.getElementById("upgrade-panel").style.display = "flex";
+            document.getElementById("manual-bar").style.display = "block";
             
-            if(name === "Shuceeb") { document.getElementById("ability-btn-1").innerText = "Rainbow Beam (40 St)"; document.getElementById("ability-btn-2").innerText = "Super Speed (40 St)"; }
-            if(name === "Aadam") { document.getElementById("ability-btn-1").innerText = "Summon Robot (60 St)"; document.getElementById("ability-btn-2").innerText = "Drone Lasers (30 St)"; }
-            if(name === "Yakoub") { document.getElementById("ability-btn-1").innerText = "Plasma Laser (40 St)"; document.getElementById("ability-btn-2").innerText = "Minigun Overdrive (50 St)"; }
-            if(name === "Daiyon") { document.getElementById("ability-btn-1").innerText = "Plasma Cannon (40 St)"; document.getElementById("ability-btn-2").innerText = "Plant C4 Bomb (35 St)"; }
-            if(name === "Arafat") { document.getElementById("ability-btn-1").innerText = "Auto Heal Field (30 St)"; document.getElementById("ability-btn-2").innerText = "RPG Rocket (45 St)"; }
-            if(name === "Naythan") { document.getElementById("ability-btn-1").innerText = "Katana Spin Slash (30 St)"; document.getElementById("ability-btn-2").innerText = "Precision Strike (40 St)"; }
+            if(name === "Shuceeb") { document.getElementById("ability-btn-1").innerText = "Rainbow Beam [1]"; document.getElementById("ability-btn-2").innerText = "Super Speed [2]"; }
+            if(name === "Aadam") { document.getElementById("ability-btn-1").innerText = "Summon Robot [1]"; document.getElementById("ability-btn-2").innerText = "Drone Lasers [2]"; }
+            if(name === "Yakoub") { document.getElementById("ability-btn-1").innerText = "Plasma Laser [1]"; document.getElementById("ability-btn-2").innerText = "Minigun Overdrive [2]"; }
+            if(name === "Daiyon") { document.getElementById("ability-btn-1").innerText = "Plasma Cannon [1]"; document.getElementById("ability-btn-2").innerText = "Plant C4 Bomb [2]"; }
+            if(name === "Arafat") { document.getElementById("ability-btn-1").innerText = "Auto Heal Field [1]"; document.getElementById("ability-btn-2").innerText = "RPG Rocket [2]"; }
+            if(name === "Naythan") { document.getElementById("ability-btn-1").innerText = "Katana Spin Slash [1]"; document.getElementById("ability-btn-2").innerText = "Precision Strike [2]"; }
 
             canvas.style.display = "block";
             resizeFullViewportCanvas();
             
-            window.addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) reloadTimer = 40; });
+            // KEYBOARD MATRIX LISTENERS (CAPTURES 1 AND 2 INPUT)
+            window.addEventListener("keydown", e => { 
+                keys[e.key.toLowerCase()] = true; 
+                if (e.key.toLowerCase() === 'r' && ammo < maxAmmo && reloadTimer === 0) reloadTimer = 40;
+                if (e.key === '1') castSpecialAbility(1);
+                if (e.key === '2') castSpecialAbility(2);
+            });
             window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
             canvas.addEventListener("mousemove", e => { const rect = canvas.getBoundingClientRect(); mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top; });
             window.addEventListener("mousedown", () => isMouseDown = true);
