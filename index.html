@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FBI Outbreak | Cyber Assault</title>
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: #020202; color: #00ffff; font-family: 'Courier New', monospace; overflow: hidden; user-select: none; box-sizing: border-box; }
+        #ui-box { background: rgba(5, 10, 20, 0.95); padding: 15px; border-bottom: 2px solid #00ffff; display: none; justify-content: space-around; font-size: 16px; font-weight: bold; align-items: center; box-shadow: 0 0 20px rgba(0,255,255,0.2); height: 8vh; box-sizing: border-box; }
+        canvas { background: #080a0f; border: none; cursor: crosshair; display: block; width: 100vw; height: 80vh; margin: 0; box-sizing: border-box; }
+        
+        .screen { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; padding: 40px; background: #020202; }
+        #story-box { width: 80vw; max-width: 900px; font-size: 20px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 5px #00ffff; min-height: 180px; text-transform: uppercase; background: #050811; border: 2px solid #00ffff; padding: 30px; box-shadow: 0 0 25px rgba(0,255,255,0.15); box-sizing: border-box; }
+        
+        .next-btn { background: #00ffff; color: #000; border: none; padding: 12px 40px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 30px; box-shadow: 0 0 15px #00ffff; text-transform: uppercase; border-radius: 2px; }
+        .next-btn:hover { background: #fff; box-shadow: 0 0 25px #fff; }
+        
+        .char-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; max-width: 800px; margin-top: 20px; }
+        .char-card { background: #050811; border: 2px solid #00ffaa; color: #00ffaa; padding: 15px; width: 220px; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; transition: all 0.2s ease; }
+        .char-card:hover { background: #00ffaa; color: #000; box-shadow: 0 0 20px #00ffaa; transform: scale(1.03); }
+        .ability-desc { font-size: 11px; color: #88ffcc; margin-top: 8px; font-weight: normal; line-height: 1.4; }
+        
+        #footer-bar { width: 100vw; background: #050811; border-top: 2px solid #00ffff; font-size: 14px; text-align: center; height: 12vh; line-height: 12vh; display: none; font-weight: bold; color: #fff; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <!-- CUTSCENE SYSTEM -->
+    <div id="cutscene-screen" class="screen">
+        <h2 style="color: #00ffff; font-size: 36px; letter-spacing: 4px; margin: 0 0 15px 0; text-shadow: 0 0 10px #00ffff;">⚡ CYBER OUTBREAK: OVERRIDE ⚡</h2>
+        <div id="story-box">
+            <span style="color: #ff00ff; display: block; margin-bottom: 15px;">// ACCESSING FBI SECURE ARCHIVES...</span>
+            LOGISTICS INITIALISED: SHUCEEB AND AADAM COMMENCING BASEMENT SWEEP PROTOCOLS.
+        </div>
+        <button id="story-btn" class="next-btn" onclick="progressStory()">CONTINUE TRANSMISSION</button>
+    </div>
+
+    <!-- TERMINAL SELECTION -->
+    <div id="menu-screen" class="screen" style="display:none;">
+        <h1 style="color: #00ffaa; font-size: 28px; margin-0 0 10px 0; letter-spacing: 2px;">SELECT OPERATIONAL MATRIX</h1>
+        <div class="char-grid">
+            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff', 'Rainbow Beam', 'Super Speed')">Shuceeb<div class="ability-desc">[1] Rainbow Beam<br>[2] Super Speed</div></div>
+            <div class="char-card" onclick="spawnAgent('Aadam', '#00ffff', 'Fighter Robot', 'Strike Drones')">Aadam<div class="ability-desc">[1] Fighter Robot<br>[2] Strike Drones</div></div>
+            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffff00', 'Plasma Laser', 'Minigun Mode')">Yakoub<div class="ability-desc">[1] Plasma Laser<br>[2] Minigun Mode</div></div>
+            <div class="char-card" onclick="spawnAgent('Daiyon', '#ff0055', 'Plasma Cannon', 'Deploy C4')">Daiyon<div class="ability-desc">[1] Plasma Cannon<br>[2] Deploy C4</div></div>
+            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66', 'Auto Heal', 'RPG Launcher')">Arafat<div class="ability-desc">[1] Auto Heal<br>[2] RPG Launcher</div></div>
+            <div class="char-card" onclick="spawnAgent('Naythan', '#ffaa00', 'Katana Slash', 'Precision Crit')">Naythan<div class="ability-desc">[1] Katana Slash<br>[2] Precision Crit</div></div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="ui-box">
+        <div>AGENT: <span id="ui-name">---</span></div>
+        <div>SHIELD INTEGRITY: <span id="ui-hp" style="color: #00ffaa;">100%</span></div>
+        <div>DATASYNC NODE: <span id="ui-cash" style="color: #ffff00;">0/100</span></div>
+        <div>WEAPON ENGINE: <span id="ui-gun" style="color: #ff00ff;">BASIC BLASTER</span></div>
+        <div>CHARGE: <span id="ui-ammo" style="color: #00ffff;">50/50</span></div>
+    </div>
+
+    <!-- ARENA -->
+    <canvas id="gameCanvas" style="display:none;"></canvas>
+
+    <!-- OPERATIONAL CONSOLE -->
+    <div id="footer-bar">⌨️ USE [WASD] TO FLUID DRIFT | [LEFT CLICK] TO DISCHARGE | [1] TRIPPERS ABILITY 1 | [2] TRIGGERS ABILITY 2</div>
+
+    <script>
+        const scripts = [
+            "LOGISTICS INITIALISED: SHUCEEB AND AADAM COMMENCING BASEMENT SWEEP PROTOCOLS.",
+            "ALERT: SHUCEEB BROKE OPEN THE CARGO ENTRY AREA AND ENGAGED MANIFEST DISCOVERY.",
+            "UNKNOWN ALIEN BIO-SIGNATURE DETECTED INSIDE THE ARCHIVE CRYPT VAUTS.",
+            "CRITICAL BREAKOUT OCCURRING. ASSIGNING COMBAT DRONES TO CONTAIN INFESTATION FLUIDS.",
+            "SQUADRON WARNING ACTIVATED: ALL ACTIVE FBI MATRICES DEPLOYED."
+        ];
+        let sPtr = 0;
+        function progressStory() {
+            sPtr++;
+            if(sPtr < scripts.length) {
+                document.getElementById("story-box").innerHTML = `<span style="color:#ff00ff; display:block; margin-bottom:15px;">// PARSING BLOCK DATA...</span>${scripts[sPtr]}`;
+                if(sPtr === scripts.length - 1) document.getElementById("story-btn").innerText = "INITIALISE GRID";
+            } else {
+                document.getElementById("cutscene-screen").style.display = "none";
+                document.getElementById("menu-screen").style.display = "flex";
+            }
+        }
+
+        // ENGINE CONFIGURATION
+        let canvas, ctx, activeAgent, agentColor, ab1, ab2;
+        let shield = 100, dataSync = 0, weaponLvl = 1, charge = 50;
+        let feedbackText = "GRID OPERATIONAL";
+        let textTimer = 0;
+
+        const player = { x: 300, y: 300, size: 16, speed: 5.5, keys: {} };
+        const cursor = { x: 0, y: 0 };
+        
+        // ENTITY COMPONENT MATRICES
+        const constructs = []; // Aliens / Viruses
+        const standardShots = []; // Player Lasers
+        const techDrones = []; // Active Ability Drones
+        const defensiveZones = []; // Area of effect nodes
+
+        function spawnAgent(name, color, ability1, ability2) {
+            document.getElementById("menu-screen").style.display = "none";
+            document.getElementById("ui-box").style.display = "flex";
+            canvas = document.getElementById("gameCanvas");
+            canvas.style.display = "block";
+            document.getElementById("footer-bar").style.display = "block";
+            
+            ctx = canvas.getContext("2d");
+            window.addEventListener('resize', resize);
+            resize();
+
+            activeAgent = name;
+            agentColor = color;
+            ab1 = ability1;
+            ab2 = ability2;
+
+            document.getElementById("ui-name").innerText = name.toUpperCase();
+            document.getElementById("ui-name").style.color = color;
+
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+
+            // Generate First Wave
+            for(let i=0; i<8; i++) spawnAlien();
+
+            // INPUT CONTROLLER CAPTURE
+            window.addEventListener('keydown', e => {
+                player.keys[e.key.toLowerCase()] = true;
+                if(e.key === '1') activatePower(1);
+                if(e.key === '2') activatePower(2);
+                if(e.key.toLowerCase() === 'r') rechargeCore();
+            });
+            window.addEventListener('keyup', e => player.keys[e.key.toLowerCase()] = false);
+            canvas.addEventListener('mousemove', e => {
+                const r = canvas.getBoundingClientRect();
+                cursor.x = e.clientX - r.left;
+                cursor.y = e.clientY - r.top;
+            });
+            canvas.addEventListener('mousedown', e => { if(e.button === 0) fireCoreLaser(); });
+
+            requestAnimationFrame(tickEngine);
+        }
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight * 0.80; }
+
+        function spawnAlien() {
+            let rx = Math.random() * canvas.width;
+            let ry = Math.random() < 0.5 ? 0 : canvas.height;
+            constructs.push({ x: rx, y: ry, hp: 2, size: 12, speed: 1.5 + Math.random() });
+        }
+
+        function fireCoreLaser() {
+            if(charge <= 0) { setFeedback("CORE EMPTIED - PRESS [R] TO RECHARGE"); return; }
+            charge--;
+            document.getElementById("ui-ammo").innerText = `${charge}/50`;
+
+            let angle = Math.atan2(cursor.y - player.y, cursor.x - player.x);
+            standardShots.push({
+                x: player.x, y: player.y,
+                dx: Math.cos(angle) * 11, dy: Math.sin(angle) * 11,
+                color: agentColor
+            });
+        }
+
+        // MATRIX SYSTEM POWERS
+        function activatePower(tier) {
+            let activePowerName = (tier === 1) ? ab1 : ab2;
+            setFeedback(`SYSTEM: ${activePowerName.toUpperCase()} DEPLOYED`);
+
+            if(activeAgent === "Aadam" || name === "Aadam") {
+                // Spawn autonomous support drone
+                techDrones.push({ x: player.x + 30, y: player.y - 30, angle: 0, rad: 40, color: agentColor });
+            }
+            if(activeAgent === "Yakoub" && tier === 2) {
+                weaponLvl = 3;
+                document.getElementById("ui-gun").innerText = "MINIGUN OVERDRIVE";
+            }
+            if(activeAgent === "Arafat" && tier === 1) {
+                defensiveZones.push({ x: player.x, y: player.y, radius: 80, pulse: 0, type: "heal" });
+            }
+            if(activeAgent === "Shuceeb" && tier === 2) {
+                player.speed = 9;
+                setTimeout(() => player.speed = 5.5, 4000);
+            }
+        }
+
+        function rechargeCore() {
+            charge = 50;
+            document.getElementById("ui-ammo").innerText = "50/50";
+            setFeedback("BATTERY CHARGE RECONSTITUTED");
+        }
+
+        function setFeedback(txt) {
+            feedbackText = txt;
+            document.getElementById("footer-bar").innerText = `// ${txt.toUpperCase()}`;
+        }
+
+        // SIMULATION COMPUTATION CORE
+        function updateSimulation() {
+            // Player Movement Translation Matrix
+            let mx = 0, my = 0;
+            if(player.keys['w']) my -= 1;
+            if(player.keys['s']) my += 1;
+            if(player.keys['a']) mx -= 1;
+            if(player.keys['d']) mx += 1;
+
+            if(mx !== 0 || my !== 0) {
+                let len = Math.sqrt(mx*mx + my*my);
+                player.x += (mx / len) * player.speed;
+                player.y += (my / len) * player.speed;
+            }
+
+            // Update Field Laser Projectiles
+            for(let i = standardShots.length - 1; i >= 0; i--) {
+                let shot = standardShots[i];
+                shot.x += shot.dx;
+                shot.y += shot.dy;
+                if(shot.x < 0 || shot.x > canvas.width || shot.y < 0 || shot.y > canvas.height) {
+                    standardShots.splice(i, 1);
+                }
+            }
+
+            // Update Companion Orbitals
+            techDrones.forEach(drone => {
+                drone.angle += 0.05;
+                drone.x = player.x + Math.cos(drone.angle) * drone.rad;
+                drone.y = player.y + Math.sin(drone.angle) * drone.rad;
+                
+                // Automatic Defensive Weapon Intercept
+                if(Math.random() < 0.05 && constructs.length > 0) {
+                    standardShots.push({
+                        x: drone.x, y: drone.y,
+                        dx: (Math.random() - 0.5) * 8, dy: (Math.random() - 0.5) * 8,
+                        color: "#ffffff"
+                    });
+                }
+            });
+
+            // Update Field Effect Emitters
+            for(let i = defensiveZones.length - 1; i >= 0; i--) {
+                let zone = defensiveZones[i];
+                zone.pulse += 1;
+                if(zone.type === "heal") {
+                    let dx = player.x - zone.x;
+                    let dy = player.y - zone.y;
+                    if(Math.sqrt(dx*dx + dy*dy) < zone.radius && shield < 100) {
+                        shield += 0.1;
+                        document.getElementById("ui-hp").innerText = `${Math.floor(shield)}%`;
+                    }
+                }
+                if(zone.pulse > 200) defensiveZones.splice(i, 1);
+            }
+
+            // Alien Collision Processing Loop
+            for(let c = constructs.length - 1; c >= 0; c--) {
+                let alien = constructs[c];
+                let adx = player.x - alien.x;
+                let ady = player.y - alien.y;
+                let dist = Math.sqrt(adx*adx + ady*ady);
+
+                // Tracking Path Algorithm
+                if(dist > 2) {
+                    alien.x += (adx / dist) * alien.speed;
+                    alien.y += (ady / dist) * alien.speed;
+                }
+
+                // Core Infraction Damage
+                if(dist < player.size + alien.size) {
+                    shield -= 0.2;
+                    if(shield < 0) shield = 0;
+                    document.getElementById("ui-hp").innerText = `${Math.floor(shield)}%`;
+                }
+
+                // Check Proximity Intercept to Shots
+                for(let s = standardShots.length - 1; s >= 0; s--) {
+                    let shot = standardShots[s];
+                    let sdx = shot.x - alien.x;
+                    let sdy = shot.y - alien.y;
+                    if(Math.sqrt(sdx*sdx + sdy*sdy) < alien.size + 4) {
+                        alien.hp--;
+                        standardShots.splice(s, 1);
+                        if(alien.hp <= 0) {
+                            constructs.splice(c, 1);
+                            dataSync += 10;
+                            document.getElementById("ui-cash").innerText = `${dataSync}/100`;
+                            spawnAlien();
+                            spawnAlien(); // Ramp scaling challenge factors
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        // VECTOR GRAPHICS RENDERING SYSTEM
+        function renderEngine() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Field Rings
+            defensiveZones.forEach(zone => {
+                ctx.beginPath();
+                ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI*2);
+                ctx.strokeStyle = "rgba(0, 255, 100, 0.15)";
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            });
+
+            // Draw Diamond Core Combat Unit (Player)
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.beginPath();
+            ctx.moveTo(0, -player.size);
+            ctx.lineTo(player.size, 0);
+            ctx.lineTo(0, player.size);
+            ctx.lineTo(-player.size, 0);
+            ctx.closePath();
+            ctx.fillStyle = agentColor;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = agentColor;
+            ctx.fill();
+            ctx.restore();
+            ctx.shadowBlur = 0; // Clear pass values
+
+            // Draw Active Drone Companion Core Nodes
+            techDrones.forEach(drone => {
+                ctx.beginPath();
+                ctx.arc(drone.x, drone.y, 6, 0, Math.PI*2);
+                ctx.fillStyle = "#ffffff";
+                ctx.fill();
+            });
+
+            // Draw Core Micro Laser Tracks
+            standardShots.forEach(shot => {
+                ctx.beginPath();
+                ctx.arc(shot.x, shot.y, 3, 0, Math.PI*2);
+                ctx.fillStyle = shot.color;
+                ctx.fill();
+            });
+
+            // Draw Triangle Threat Nodes (Aliens)
+            constructs.forEach(alien => {
+                ctx.save();
+                ctx.translate(alien.x, alien.y);
+                ctx.beginPath();
+                ctx.moveTo(0, -alien.size);
+                ctx.lineTo(alien.size, alien.size);
+                ctx.lineTo(-alien.size, alien.size);
+                ctx.closePath();
+                ctx.fillStyle = "#ff2244";
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Render HUD Crosshair Rings
+            ctx.beginPath();
+            ctx.arc(cursor.x, cursor.y, 8, 0, Math.PI*2);
+            ctx.strokeStyle = "#ff0055";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        function tickEngine() {
+            updateSimulation();
+            renderEngine();
+            requestAnimationFrame(tickEngine);
+        }
+    </script>
+</body>
+</html>
