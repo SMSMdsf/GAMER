@@ -32,7 +32,7 @@
         <h2 style="color: #ff00ff; font-size: 42px; letter-spacing: 3px; margin: 0 0 10px 0; text-shadow: 0 0 10px #ff00ff;">🚨 FBI OUTBREAK 🚨</h2>
         <div id="story-box">
             <span style="color: #00ffff; display: block; margin-bottom: 15px;">PREPARE DATA DEPLOYMENT</span>
-            SHUCEEB AND AADAM ARE HIGH TECH FBI AGENTS MOBILIZING AGAINST A DRAGON LEVEL BIO THREAT OUTBREAK. SYSTEM DEPLOYMENT MATRIX IS STANDING BY.
+            SHUCEEB AND AADAM WERE TECH AGENTS AND FBI.
         </div>
         <button id="story-btn" class="next-btn" onclick="progressStory()">NEXT CAPTION</button>
     </div>
@@ -86,11 +86,17 @@
         
         let scriptPointer = 0;
 
+        // FIXED CAPTION SCENE NAVIGATOR MATRIX
         function progressStory() {
             scriptPointer++;
             if (scriptPointer < scenarioScripts.length) {
-                document.getElementById("story-box").innerText = scenarioScripts[scriptPointer];
-                if (scriptPointer === scenarioScripts.length - 1) document.getElementById("story-btn").innerText = "DEPLOY TO CHOOSE OPERATOR";
+                document.getElementById("story-box").innerHTML = `
+                    <span style="color: #00ffff; display: block; margin-bottom: 15px;">PREPARE DATA DEPLOYMENT</span>
+                    ${scenarioScripts[scriptPointer]}
+                `;
+                if (scriptPointer === scenarioScripts.length - 1) {
+                    document.getElementById("story-btn").innerText = "DEPLOY TO CHOOSE OPERATOR";
+                }
             } else {
                 document.getElementById("cutscene-screen").style.display = "none";
                 document.getElementById("menu-screen").style.display = "flex";
@@ -127,7 +133,6 @@
             document.getElementById("story-caption-box").style.display = "flex";
             document.getElementById("upgrade-panel").style.display = "flex";
             
-            // CONFIGURE BUTTON NAMES BASED ON SELECTED AGENT
             if(name === "Shuceeb") { document.getElementById("ability-btn-1").innerText = "Rainbow Beam (40 St)"; document.getElementById("ability-btn-2").innerText = "Super Speed (40 St)"; }
             if(name === "Aadam") { document.getElementById("ability-btn-1").innerText = "Summon Robot (60 St)"; document.getElementById("ability-btn-2").innerText = "Drone Lasers (30 St)"; }
             if(name === "Yakoub") { document.getElementById("ability-btn-1").innerText = "Plasma Laser (40 St)"; document.getElementById("ability-btn-2").innerText = "Minigun Overdrive (50 St)"; }
@@ -221,14 +226,13 @@
             
             if (isMouseDown && player.name !== "---") {
                 if (fireCooldown === 0 && reloadTimer === 0 && ammo > 0) {
-                    ammo--; runFX('fire');
+                    ammo--;
                     let dmgValue = 10 + (gunLevel * 5);
                     bullets.push({ x: player.x, y: player.y, vx: Math.cos(player.angle) * 16, vy: Math.sin(player.angle) * 16, dmg: dmgValue, color: "#ffff00", size: 5 });
                     fireCooldown = 6; updateUI();
                 }
             }
 
-            // Move Aadam Robots
             activeAadamRobots.forEach((r, idx) => { r.x += r.speed; enemies.forEach(e => { if(Math.abs(e.x - r.x) < 20) e.hp -= 50; }); if(r.x < -50) activeAadamRobots.splice(idx,1); });
 
             bullets.forEach((b, bIdx) => {
@@ -237,14 +241,14 @@
 
                 enemies.forEach((e, eIdx) => {
                     if (Math.hypot(b.x - e.x, b.y - e.y) < 20) {
-                        e.hp -= b.dmg; runFX('hit'); if(!b.pierce) bullets.splice(bIdx, 1);
+                        e.hp -= b.dmg; if(!b.pierce) bullets.splice(bIdx, 1);
                         if (e.hp <= 0) { enemies.splice(eIdx, 1); kills++; cash += e.bounty; if(kills % 10 === 0 && kills > 0 && !bossActive) triggerBossDuel(); updateUI(); }
                     }
                 });
 
                 bosses.forEach((boss, bossIdx) => {
                     if (Math.hypot(b.x - boss.x, b.y - boss.y) < boss.size) {
-                        boss.hp -= b.dmg; runFX('hit'); bullets.splice(bIdx, 1);
+                        boss.hp -= b.dmg; bullets.splice(bIdx, 1);
                         if (boss.hp <= 0) { bosses.splice(bossIdx, 1); kills++; cash += 500; bossActive = false; updateUI(); }
                     }
                 });
@@ -254,7 +258,7 @@
                 e.x += e.speed;
                 if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + 10) {
                     hp -= e.dmg; updateUI(); 
-                    if (hp <= 0) { alert("FBI SURVIVAL FAILURE. Resetting Operations Grid."); location.reload(); }
+                    if (hp <= 0) { alert("FBI SURVIVAL FAILURE."); location.reload(); }
                 }
             });
 
@@ -272,9 +276,7 @@
 
             ctx.fillStyle = "rgba(255, 0, 0, 0.12)"; ctx.fillRect(0, 0, 40, fixedGroundLineY);
 
-            // Draw C4 Bombs
             activeC4Bombs.forEach(c => { ctx.fillStyle = "red"; ctx.fillRect(c.x, c.y, 14, 6); });
-            // Draw Aadam Robots
             activeAadamRobots.forEach(r => { ctx.fillStyle = "#ff0055"; ctx.fillRect(r.x, r.y, 16, 30); });
 
             ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
