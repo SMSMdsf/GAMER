@@ -23,7 +23,7 @@
         .char-card { background: #111411; border: 2px solid #00ff00; padding: 15px; width: 200px; cursor: pointer; border-radius: 6px; font-weight: bold; text-transform: uppercase; }
         .char-card:hover { background: #00ff00; color: #000; box-shadow: 0 0 15px #00ff00; }
         .ability-desc { font-size: 10px; color: #aaa; margin-top: 5px; font-weight: normal; }
-        .manual-layout { width: 100vw; background: #111411; border-top: 1px solid #00ff00; font-size: 11px; color: #fff; text-align: center; height: 4vh; line-height: 4vh; display: none; }
+        .manual-bar { width: 100vw; background: #111411; border-top: 1px solid #00ff00; font-size: 11px; color: #fff; text-align: center; height: 4vh; line-height: 4vh; display: none; }
     </style>
 </head>
 <body>
@@ -42,12 +42,12 @@
     <div id="menu-screen" class="screen" style="display:none;">
         <h1 style="color: #00ff00; font-size: 32px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">SELECT LOGISTICS OPERATOR</h1>
         <div class="char-grid">
-            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff')">Shuceeb<div class="ability-desc">[1]: Rainbow Beam<br>[2]: Super Speed</div></div>
-            <div class="char-card" onclick="spawnAgent('Aadam', '#ff0055')">Aadam<div class="ability-desc">[1]: Fighter Robot<br>[2]: Strike Drones</div></div>
-            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffcc00')">Yakoub<div class="ability-desc">[1]: Plasma Laser<br>[2]: Minigun Mode</div></div>
-            <div class="char-card" onclick="spawnAgent('Daiyon', '#9900ff')">Daiyon<div class="ability-desc">[1]: Plasma Cannon<br>[2]: Deploy C4 Bombs</div></div>
-            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66')">Arafat<div class="ability-desc">[1]: Auto Heal<br>[2]: RPG Launcher</div></div>
-            <div class="char-card" onclick="spawnAgent('Naythan', '#ff6600')">Naythan<div class="ability-desc">[1]: Katana Slash<br>[2]: Precision Crit</div></div>
+            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff', 'Rainbow Beam', 'Super Speed')">Shuceeb<div class="ability-desc">: Rainbow Beam<br>: Super Speed</div></div>
+            <div class="char-card" onclick="spawnAgent('Aadam', '#ff0055', 'Fighter Robot', 'Strike Drones')">Aadam<div class="ability-desc">: Fighter Robot<br>: Strike Drones</div></div>
+            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffcc00', 'Plasma Laser', 'Minigun Mode')">Yakoub<div class="ability-desc">: Plasma Laser<br>: Minigun Mode</div></div>
+            <div class="char-card" onclick="spawnAgent('Daiyon', '#9900ff', 'Plasma Cannon', 'Deploy C4 Bombs')">Daiyon<div class="ability-desc">: Plasma Cannon<br>: Deploy C4 Bombs</div></div>
+            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66', 'Auto Heal', 'RPG Launcher')">Arafat<div class="ability-desc">: Auto Heal<br>: RPG Launcher</div></div>
+            <div class="char-card" onclick="spawnAgent('Naythan', '#ff6600', 'Katana Slash', 'Precision Crit')">Naythan<div class="ability-desc">: Katana Slash<br>: Precision Crit</div></div>
         </div>
     </div>
 
@@ -55,7 +55,6 @@
     <div id="ui-box">
         <div>AGENT: <span id="ui-name" style="color: #ff00ff;">---</span></div>
         <div>HEALTH: <span id="ui-hp" style="color: #ff3333;">250/250</span></div>
-        <div>STAMINA: <span id="ui-stamina" style="color: #ffff00;">150/150</span></div>
         <div>ARMORY CASH: <span id="ui-cash" style="color: #00ffff;">$0</span></div>
         <div>GUN TIER: <span id="ui-gun" style="color: #00ffff;">Level 1 Weapon</span></div>
         <div>AMMO: <span id="ui-ammo" style="color: #ff00ff;">30/30</span></div>
@@ -65,7 +64,7 @@
     <canvas id="survivalCanvas" style="display:none;"></canvas>
 
     <!-- HOTKEY MANUAL GUIDE -->
-    <div id="manual-bar" class="manual-layout">🎹 PRESS [1] FOR ABILITY 1 || PRESS [2] FOR ABILITY 2 || PRESS [R] TO RELOAD AMMO</div>
+    <div id="manual-bar" class="manual-bar">🎹 PRESS [1] FOR ABILITY 1 || PRESS [2] FOR ABILITY 2 || CLICK MOUSE TO SHOOT || PRESS [R] TO RELOAD</div>
 
     <!-- STATUS FOOTER -->
     <div id="story-caption-box">[COMBAT ZONE SECURED]</div>
@@ -106,15 +105,29 @@
             }
         }
 
-        // --- CORE ENGINE VARIABLES ---
+        // --- CORE GAME VARIABLES ---
         let canvas, ctx;
         let activeAgent = null;
         let agentColor = '#00ff00';
-        const player = { x: 400, y: 300, size: 20, speed: 4, keys: {}, moving: false, angle: 0 };
-        const cursor = { x: 0, y: 0 };
+        let ab1Name = "", ab2Name = "";
+        
+        let health = 250;
+        let cash = 0;
+        let ammo = 30;
+        let gunTier = 1;
+        let activeNotification = "[COMBAT ZONE SECURED]";
+        let notificationTimer = 0;
 
-        // --- INITIALIZE SIMULATOR GAMEPLAY ---
-        function spawnAgent(name, color) {
+        const player = { x: 400, y: 300, speed: 4, keys: {}, moving: false, angle: 0 };
+        const cursor = { x: 0, y: 0 };
+        
+        // Weapon and Enemy Arrays
+        const zombies = [];
+        const bullets = [];
+        let spawnTimer = 0;
+
+        // --- INITIALIZE GAMEPLAY AND ASSIGN ABILITIES ---
+        function spawnAgent(name, color, ab1, ab2) {
             document.getElementById("menu-screen").style.display = "none";
             document.getElementById("ui-box").style.display = "flex";
             
@@ -129,21 +142,38 @@
 
             activeAgent = name;
             agentColor = color;
+            ab1Name = ab1;
+            ab2Name = ab2;
+
+            document.getElementById("ability-btn-1").innerText = `${ab1.toUpperCase()} [1]`;
+            document.getElementById("ability-btn-2").innerText = `${ab2.toUpperCase()} [2]`;
+
             document.getElementById("ui-name").innerText = name.toUpperCase();
             document.getElementById("ui-name").style.color = color;
 
-            // Positioning player inside active center viewport bounds
             player.x = canvas.width / 2;
             player.y = canvas.height / 2;
 
-            // Establish I/O Listeners
+            for (let i = 0; i < 6; i++) { spawnZombie(); }
+
+            // Establish Listeners
             window.addEventListener('resize', resizeCanvas);
-            window.addEventListener('keydown', e => { player.keys[e.key.toLowerCase()] = true; if(e.key.toLowerCase() === 'r') reloadWeapon(); });
+            window.addEventListener('keydown', e => { 
+                player.keys[e.key.toLowerCase()] = true; 
+                if (e.key === '1') castSpecialAbility(1);
+                if (e.key === '2') castSpecialAbility(2);
+                if (e.key.toLowerCase() === 'r') reloadWeapon(); 
+            });
             window.addEventListener('keyup', e => player.keys[e.key.toLowerCase()] = false);
+            
             canvas.addEventListener('mousemove', e => {
                 const rect = canvas.getBoundingClientRect();
                 cursor.x = e.clientX - rect.left;
                 cursor.y = e.clientY - rect.top;
+            });
+
+            canvas.addEventListener('mousedown', e => {
+                if (e.button === 0) fireWeapon();
             });
 
             requestAnimationFrame(gameLoop);
@@ -155,7 +185,42 @@
             canvas.height = window.innerHeight * 0.72;
         }
 
-        // --- INPUT & UPDATE PHYSICS ENGINE ---
+        function spawnZombie() {
+            let x, y;
+            if (Math.random() < 0.5) {
+                x = Math.random() < 0.5 ? 0 : window.innerWidth;
+                y = Math.random() * (window.innerHeight * 0.72);
+            } else {
+                x = Math.random() * window.innerWidth;
+                y = Math.random() < 0.5 ? 0 : (window.innerHeight * 0.72);
+            }
+            zombies.push({ x: x, y: y, speed: 1.0 + Math.random() * 0.8, size: 14 });
+        }
+
+        // --- BALANCED BALLISTICS CALCULATION ENGINE ---
+        function fireWeapon() {
+            if (ammo <= 0) {
+                document.getElementById("story-caption-box").innerText = "❌ OUT OF AMMO! PRESS [R] TO RELOAD";
+                notificationTimer = 60;
+                return;
+            }
+
+            ammo--;
+            document.getElementById("ui-ammo").innerText = `${ammo}/30`;
+
+            // Calculate exact straight-line angle vector target from player core directly to crosshair
+            const targetAngle = Math.atan2(cursor.y - player.y, cursor.x - player.x);
+            
+            bullets.push({
+                x: player.x,
+                y: player.y,
+                vx: Math.cos(targetAngle) * 9, // Independent, static horizontal velocity vector
+                vy: Math.sin(targetAngle) * 9, // Independent, static vertical velocity vector
+                size: 4
+            });
+        }
+
+        // --- CORE ENGINE PHYSICS ---
         function updateGame() {
             let dx = 0;
             let dy = 0;
@@ -166,12 +231,10 @@
 
             if (dx !== 0 || dy !== 0) {
                 player.moving = true;
-                // Normalize speed vector for diagonals
                 const length = Math.sqrt(dx * dx + dy * dy);
                 player.x += (dx / length) * player.speed;
                 player.y += (dy / length) * player.speed;
 
-                // Screen boundaries clamping
                 if (player.x < 20) player.x = 20;
                 if (player.x > canvas.width - 20) player.x = canvas.width - 20;
                 if (player.y < 30) player.y = 30;
@@ -180,61 +243,117 @@
                 player.moving = false;
             }
 
-            // Calculate rotational look angle targeting cursor crosshairs
+            // Keep head orientation locked on cursor target point
             player.angle = Math.atan2(cursor.y - player.y, cursor.x - player.x);
+
+            // Projectile Physics Matrix
+            for (let b = bullets.length - 1; b >= 0; b--) {
+                let bullet = bullets[b];
+                bullet.x += bullet.vx;
+                bullet.y += bullet.vy;
+
+                // Out of bounds screen sweep cleanup
+                if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
+                    bullets.splice(b, 1);
+                    continue;
+                }
+
+                // Hitbox Collision Calculation Check
+                for (let z = zombies.length - 1; z >= 0; z--) {
+                    let zombie = zombies[z];
+                    let distY = bullet.y - zombie.y;
+                    let distX = bullet.x - zombie.x;
+                    let distance = Math.sqrt(distX * distX + distY * distY);
+
+                    if (distance < zombie.size + bullet.size) {
+                        zombies.splice(z, 1);
+                        bullets.splice(b, 1);
+                        cash += 15;
+                        document.getElementById("ui-cash").innerText = `$${cash}`;
+                        spawnZombie(); // Keep action constant
+                        break;
+                    }
+                }
+            }
+
+            // Zombie Tracking Logic
+            spawnTimer++;
+            if (spawnTimer % 100 === 0) { spawnZombie(); }
+
+            zombies.forEach(zombie => {
+                let zdx = player.x - zombie.x;
+                let zdy = player.y - zombie.y;
+                let dist = Math.sqrt(zdx * zdx + zdy * zdy);
+
+                if (dist > 5) {
+                    zombie.x += (zdx / dist) * zombie.speed;
+                    zombie.y += (zdy / dist) * zombie.speed;
+                }
+
+                if (dist < 22) {
+                    health -= 0.4;
+                    if (health < 0) health = 0;
+                    document.getElementById("ui-hp").innerText = `${Math.floor(health)}/250`;
+                }
+            });
+
+            if (notificationTimer > 0) {
+                notificationTimer--;
+                if (notificationTimer === 0) {
+                    document.getElementById("story-caption-box").innerText = "[COMBAT ZONE SECURED]";
+                }
+            }
         }
 
-        // --- CUSTOM ANIMATED STICKMAN RENDERING SYSTEM ---
+        // --- STICKMAN ART GENERATOR ---
         function drawStickman(ctx, x, y, angle, color, isMoving) {
             ctx.save();
             ctx.translate(x, y);
-            ctx.rotate(angle + Math.PI / 2); // Shift system so stickman points forward along orientation axis
+            ctx.rotate(angle + Math.PI / 2);
 
             ctx.lineWidth = 3.5;
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
 
-            // 1. Head Unit
+            // Head
             ctx.beginPath();
             ctx.arc(0, -22, 9, 0, Math.PI * 2);
             ctx.fill();
 
-            // 2. Spine / Chest Core
+            // Spine Core
             ctx.beginPath();
             ctx.moveTo(0, -13);
             ctx.lineTo(0, 12);
             ctx.stroke();
 
-            // 3. Tactical Arms (Holding forward stance)
+            // Stance Arms
             ctx.beginPath();
             ctx.moveTo(0, -5);
-            ctx.lineTo(-14, -12); // Left arm
+            ctx.lineTo(-14, -12);
             ctx.moveTo(0, -5);
-            ctx.lineTo(14, -12);  // Right arm
+            ctx.lineTo(14, -12);
             ctx.stroke();
 
-            // 4. Weaponry Extension
+            // Weapon Barrel System
             ctx.beginPath();
             ctx.lineWidth = 4;
             ctx.strokeStyle = "#555555";
             ctx.moveTo(10, -12);
-            ctx.lineTo(10, -28); // Barrel configuration pointing forward
+            ctx.lineTo(10, -28);
             ctx.stroke();
 
-            // 5. Dynamic Walking Legs Engine
+            // Animated Leg Segments
             ctx.lineWidth = 3.5;
             ctx.strokeStyle = color;
             ctx.beginPath();
-            ctx.moveTo(0, 12); // Split point from pelvis
+            ctx.moveTo(0, 12);
 
             if (isMoving) {
-                // Generate a cyclic sinusoidal loop using system ticks
                 let timeMod = Math.sin(Date.now() * 0.012) * 14;
-                ctx.lineTo(-11, 32 + timeMod); // Active swinging Leg 1
+                ctx.lineTo(-11, 32 + timeMod);
                 ctx.moveTo(0, 12);
-                ctx.lineTo(11, 32 - timeMod);  // Active swinging Leg 2
+                ctx.lineTo(11, 32 - timeMod);
             } else {
-                // Grounded resting posture alignment
                 ctx.lineTo(-9, 32);
                 ctx.moveTo(0, 12);
                 ctx.lineTo(9, 32);
@@ -243,28 +362,92 @@
             ctx.restore();
         }
 
-        // --- SIMULATOR RENDER LOOP ---
+        // --- SCENE ART RENDER WRAPPERS ---
+        function drawZombies() {
+            zombies.forEach(zombie => {
+                ctx.save();
+                ctx.translate(zombie.x, zombie.y);
+
+                ctx.beginPath();
+                ctx.arc(0, 0, zombie.size, 0, Math.PI * 2);
+                ctx.fillStyle = "#336633";
+                ctx.strokeStyle = "#00ff00";
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = "#ff0000";
+                ctx.beginPath();
+                ctx.arc(-4, -2, 2.5, 0, Math.PI * 2);
+                ctx.arc(4, -2, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            });
+        }
+
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffff00";
+                ctx.fill();
+            });
+        }
+
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             updateGame();
-
-            // Render operational stickman asset
+            drawZombies();
+            drawBullets();
             drawStickman(ctx, player.x, player.y, player.angle, agentColor, player.moving);
 
-            // Render cursor visual anchor
+            // Red Crosshair Pointer 
             ctx.beginPath();
-            ctx.arc(cursor.x, cursor.y, 4, 0, Math.PI * 2);
+            ctx.arc(cursor.x, cursor.y, 5, 0, Math.PI * 2);
             ctx.fillStyle = "#ff0000";
             ctx.fill();
 
             requestAnimationFrame(gameLoop);
         }
 
-        // --- PLACEHOLDER SIMULATOR HUD INTERACTIONS ---
-        function upgradeGuns() { alert("Arsenal Level Maxed Out!"); }
-        function castSpecialAbility(id) { alert(`${activeAgent} triggered Tactical Ability [${id}]!`); }
-        function reloadWeapon() { alert("Reloading Ammunition Chambers..."); }
+        // --- SYSTEM SPECIAL ABILITIES MAPPING ---
+        function castSpecialAbility(id) {
+            let triggeredAbilityName = (id === 1) ? ab1Name : ab2Name;
+            
+            if(id === 1) {
+                if(activeAgent === "Arafat") { health = 250; document.getElementById("ui-hp").innerText = "250/250"; }
+                cash += 25; 
+            } else {
+                if(activeAgent === "Shuceeb") { player.speed = 8; setTimeout(() => { player.speed = 4; }, 3000); }
+            }
+
+            document.getElementById("ui-cash").innerText = `$${cash}`;
+            document.getElementById("story-caption-box").innerText = `🔥 ${activeAgent.toUpperCase()} ACTIVATED: ${triggeredAbilityName.toUpperCase()}!`;
+            notificationTimer = 180; 
+        }
+
+        function reloadWeapon() {
+            ammo = 30;
+            document.getElementById("ui-ammo").innerText = "30/30";
+            document.getElementById("story-caption-box").innerText = "🔄 AMMUNITION RECHARGED...";
+            notificationTimer = 90;
+        }
+
+        function upgradeGuns() { 
+            if (cash >= 100) {
+                cash -= 100;
+                gunTier += 1;
+                player.speed += 0.5; // Upgrades make stickman move faster
+                document.getElementById("ui-cash").innerText = `$${cash}`;
+                document.getElementById("ui-gun").innerText = `Level ${gunTier} Weapon`;
+                document.getElementById("story-caption-box").innerText = `⚡ GUN UPGRADED TO TIER ${gunTier}!`;
+            } else {
+                document.getElementById("story-caption-box").innerText = "❌ NEED $100 ARMORY CASH TO UPGRADE.";
+            }
+            notificationTimer = 120;
+        }
     </script>
 </body>
 </html>
