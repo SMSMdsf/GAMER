@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FBI Outbreak | Cyber Assault</title>
+    <title>FBI Outbreak | 10-Scene Matrix Extended</title>
     <style>
         html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: #020202; color: #00ffff; font-family: 'Courier New', monospace; overflow: hidden; user-select: none; box-sizing: border-box; }
         #ui-box { background: rgba(5, 10, 20, 0.95); padding: 15px; border-bottom: 2px solid #00ffff; display: none; justify-content: space-around; font-size: 16px; font-weight: bold; align-items: center; box-shadow: 0 0 20px rgba(0,255,255,0.2); height: 8vh; box-sizing: border-box; }
         canvas { background: #080a0f; border: none; cursor: crosshair; display: block; width: 100vw; height: 80vh; margin: 0; box-sizing: border-box; }
         
         .screen { width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; padding: 40px; background: #020202; }
-        #story-box { width: 80vw; max-width: 900px; font-size: 20px; line-height: 1.6; color: #ffffff; text-shadow: 0 0 5px #00ffff; min-height: 180px; text-transform: uppercase; background: #050811; border: 2px solid #00ffff; padding: 30px; box-shadow: 0 0 25px rgba(0,255,255,0.15); box-sizing: border-box; }
+        #story-box { width: 85vw; max-width: 1000px; font-size: 18px; line-height: 1.8; color: #ffffff; text-shadow: 0 0 5px #00ffff; min-height: 220px; text-transform: uppercase; background: #050811; border: 2px solid #00ffff; padding: 35px; box-shadow: 0 0 25px rgba(0,255,255,0.15); box-sizing: border-box; }
         
         .next-btn { background: #00ffff; color: #000; border: none; padding: 12px 40px; font-size: 18px; cursor: pointer; font-weight: bold; margin-top: 30px; box-shadow: 0 0 15px #00ffff; text-transform: uppercase; border-radius: 2px; }
         .next-btn:hover { background: #fff; box-shadow: 0 0 25px #fff; }
@@ -23,26 +23,26 @@
 </head>
 <body>
 
-    <!-- CUTSCENE SYSTEM -->
+    <!-- 10 SCENE CUTSCENE SYSTEM -->
     <div id="cutscene-screen" class="screen">
-        <h2 style="color: #00ffff; font-size: 36px; letter-spacing: 4px; margin: 0 0 15px 0; text-shadow: 0 0 10px #00ffff;">⚡ CYBER OUTBREAK: OVERRIDE ⚡</h2>
+        <h2 id="scene-title" style="color: #00ffff; font-size: 32px; letter-spacing: 4px; margin: 0 0 15px 0; text-shadow: 0 0 10px #00ffff;">⚡ CODENAME: OUTBREAK [SCENE 1/10] ⚡</h2>
         <div id="story-box">
-            <span style="color: #ff00ff; display: block; margin-bottom: 15px;">// ACCESSING FBI SECURE ARCHIVES...</span>
-            LOGISTICS INITIALISED: SHUCEEB AND AADAM COMMENCING BASEMENT SWEEP PROTOCOLS.
+            <span style="color: #ff00ff; display: block; margin-bottom: 15px;">// INITIALISING QUANTUM NARRATIVE SYSTEM...</span>
+            <div id="story-text-container">DEEP SUBSURFACE LONG-RANGE RADAR SCANS INDICATE A HIGH-LEVEL ANOMALY PULSING BELOW THE MAINBOARD CHAMBERS. SHUCEEB IMMEDIATELY INITIALISES A TACTICAL OVERRIDE SEQUENCE ON HIS TERMINAL TO TRACK THE UNIDENTIFIED BIOLOGICAL FREQUENCY. THE PRIMARY SIGNAL ORIGINATES FROM A FORGOTTEN MILITARY ARCHIVE CRYPT HIDDEN FAR BENEATH THE BASE VAULTS.</div>
         </div>
-        <button id="story-btn" class="next-btn" onclick="progressStory()">CONTINUE TRANSMISSION</button>
+        <button id="story-btn" class="next-btn" onclick="progressStory()">ADVANCE TIMELINE TRANSMISSION</button>
     </div>
 
     <!-- TERMINAL SELECTION -->
     <div id="menu-screen" class="screen" style="display:none;">
-        <h1 style="color: #00ffaa; font-size: 28px; margin-0 0 10px 0; letter-spacing: 2px;">SELECT OPERATIONAL MATRIX</h1>
+        <h1 style="color: #00ffaa; font-size: 28px; margin: 0 0 10px 0; letter-spacing: 2px;">SELECT OPERATIONAL MATRIX</h1>
         <div class="char-grid">
-            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff', 'Rainbow Beam', 'Super Speed')">Shuceeb<div class="ability-desc">[1] Rainbow Beam<br>[2] Super Speed</div></div>
-            <div class="char-card" onclick="spawnAgent('Aadam', '#00ffff', 'Fighter Robot', 'Strike Drones')">Aadam<div class="ability-desc">[1] Fighter Robot<br>[2] Strike Drones</div></div>
-            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffff00', 'Plasma Laser', 'Minigun Mode')">Yakoub<div class="ability-desc">[1] Plasma Laser<br>[2] Minigun Mode</div></div>
-            <div class="char-card" onclick="spawnAgent('Daiyon', '#ff0055', 'Plasma Cannon', 'Deploy C4')">Daiyon<div class="ability-desc">[1] Plasma Cannon<br>[2] Deploy C4</div></div>
-            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66', 'Auto Heal', 'RPG Launcher')">Arafat<div class="ability-desc">[1] Auto Heal<br>[2] RPG Launcher</div></div>
-            <div class="char-card" onclick="spawnAgent('Naythan', '#ffaa00', 'Katana Slash', 'Precision Crit')">Naythan<div class="ability-desc">[1] Katana Slash<br>[2] Precision Crit</div></div>
+            <div class="char-card" onclick="spawnAgent('Shuceeb', '#ff00ff', 'Rainbow Beam', 'Super Speed')">Shuceeb<div class="ability-desc"> Rainbow Beam<br> Super Speed</div></div>
+            <div class="char-card" onclick="spawnAgent('Aadam', '#00ffff', 'Fighter Robot', 'Strike Drones')">Aadam<div class="ability-desc"> Fighter Robot<br> Strike Drones</div></div>
+            <div class="char-card" onclick="spawnAgent('Yakoub', '#ffff00', 'Plasma Laser', 'Minigun Mode')">Yakoub<div class="ability-desc"> Plasma Laser<br> Minigun Mode</div></div>
+            <div class="char-card" onclick="spawnAgent('Daiyon', '#ff0055', 'Plasma Cannon', 'Deploy C4')">Daiyon<div class="ability-desc"> Plasma Cannon<br> Deploy C4</div></div>
+            <div class="char-card" onclick="spawnAgent('Arafat', '#00ff66', 'Auto Heal', 'RPG Launcher')">Arafat<div class="ability-desc"> Auto Heal<br> RPG Launcher</div></div>
+            <div class="char-card" onclick="spawnAgent('Naythan', '#ffaa00', 'Katana Slash', 'Precision Crit')">Naythan<div class="ability-desc"> Katana Slash<br> Precision Crit</div></div>
         </div>
     </div>
 
@@ -55,46 +55,62 @@
         <div>CHARGE: <span id="ui-ammo" style="color: #00ffff;">50/50</span></div>
     </div>
 
-    <!-- ARENA -->
+    <!-- ARENA MAP VIEWPORT -->
     <canvas id="gameCanvas" style="display:none;"></canvas>
 
     <!-- OPERATIONAL CONSOLE -->
-    <div id="footer-bar">⌨️ USE [WASD] TO FLUID DRIFT | [LEFT CLICK] TO DISCHARGE | [1] TRIPPERS ABILITY 1 | [2] TRIGGERS ABILITY 2</div>
+    <div id="footer-bar">⌨️ USE [WASD] TO DRIFT | [LEFT CLICK] TO DISCHARGE LASERS | PRESS [1] OR [2] FOR EXTRA BACKUP POWERS</div>
 
     <script>
+        // FULL 10 CHRONOLOGICAL NARRATIVE SCENES ARRAY (3-4 SENTENCES EACH)
         const scripts = [
-            "LOGISTICS INITIALISED: SHUCEEB AND AADAM COMMENCING BASEMENT SWEEP PROTOCOLS.",
-            "ALERT: SHUCEEB BROKE OPEN THE CARGO ENTRY AREA AND ENGAGED MANIFEST DISCOVERY.",
-            "UNKNOWN ALIEN BIO-SIGNATURE DETECTED INSIDE THE ARCHIVE CRYPT VAUTS.",
-            "CRITICAL BREAKOUT OCCURRING. ASSIGNING COMBAT DRONES TO CONTAIN INFESTATION FLUIDS.",
-            "SQUADRON WARNING ACTIVATED: ALL ACTIVE FBI MATRICES DEPLOYED."
+            "DEEP SUBSURFACE LONG-RANGE RADAR SCANS INDICATE A HIGH-LEVEL ANOMALY PULSING BELOW THE MAINBOARD CHAMBERS. SHUCEEB IMMEDIATELY INITIALISES A TACTICAL OVERRIDE SEQUENCE ON HIS TERMINAL TO TRACK THE UNIDENTIFIED BIOLOGICAL FREQUENCY. THE PRIMARY SIGNAL ORIGINATES FROM A FORGOTTEN MILITARY ARCHIVE CRYPT HIDDEN FAR BENEATH THE BASE VAULTS.",
+            
+            "THE ATMOSPHERIC PRESSURE DROPS HEAVILY AS SHUCEEB DRIFTS THE TACTICAL RESPONSE VEHICLE OUTSIDE THE REINFORCED SUB-LEVEL ENTRANCE BLOCKS. AADAM INITIATES A REAL-TIME SATELLITE DIGITAL MAP OVERLAY TO TRACK THE NARROWING STRUCTURAL PATHWAYS. HEAVY IRON CHAINS ON THE DOORS SUGGEST THAT WHATEVER IS KEPT DOWN HERE WAS NEVER MEANT TO ESCAPE.",
+            
+            "SHUCEEB STEPS OUT OF THE DRIVER SEAT AND KICKS THE HEAVY IRON BULKHEAD DOOR OFF ITS HINGES WITH A LOUD METALLIC CRASH. AADAM CHECKS HIS COMMUNICATION MONITOR AND REPORTS THAT ALL VENTILATION LINES AND DIGITAL POWER FEEDS INSIDE THE FACILITY HAVE JUST GONE DARK. THEY DRAW THEIR WEAPONS AND STEP INTO THE PITCH-BLACK SHADOWS TOGETHER.",
+            
+            "THE FLASHLIGHT BEAMS REVEAL A MASSIVE EXTRATERRESTRIAL BIOLOGICAL HATCHING CORE POD PULSATING IN THE CENTER OF THE DAMP ROOM. IT IS CONTINUOUSLY OOZING A THICK, RADIOACTIVE GREEN BIOMATTER THAT EATS THROUGH THE SOLID CONCRETE FLOOR. AADAM RUNS A CHEMICAL SCANNER AND NOTES THAT THE ORGANIC STRUCTURE IS RAPIDLY HEATING UP.",
+            
+            "WITHOUT WARNING, THE VOLATILE ALIEN EGG DETONATES WITH A DEAFENING BLAST AND A FAST SLIME-COVERED ENTITY CHARGES DIRECTLY AT SHUCEEB. SHUCEEB REACTS INSTANTLY, DISCHARGING HIS HEAVY SIDEARM INTO THE DARKNESS TO PROTECT HIS POSITION. AADAM CAPTURES STRUCTURAL THREAT FOOTAGE AND UPLOADS IT TO THE MAIN SERVER TO CALCULATE A COUNTER-STRATEGY.",
+            
+            "WITH THE CONTAINMENT ZONE FULLY COMPROMISED, SHUCEEB INITIATES AN EMERGENCY QUANTUM DISPLACEMENT LINK TO ESCAPE. THE DEVICE FLASHES WITH BRIGHT PURPLE ENERGY AND PULLS BOTH AGENTS OUT OF THE CRUMBLING SUBSURFACE CORRIDORS. THEY MATERIALISE SAFELY BACK INSIDE THE PRIMARY TECHCYBER HUB STATION COMMAND ROOM.",
+            
+            "EMERGENCY RED SIRENS BLARE ACROSS THE UPPER DECK AS THE BASE MAINFRAME WARNS OF MULTIPLE FOREIGN PERIMETER BREACHES. NAYTHAN DRAWS HIS HIGH-VIBRATION PLASMA KATANA BLADE AND PREPARES TO HOLD THE CENTRAL BULKHEAD LINE ALONE. HE SLICES THROUGH THE FIRST INCOMING WAVE OF CYBERNETIC VIRUS PARTICLES WITH FLAWLESS ACCURACY.",
+            
+            "THE INTENSE HEAT FROM THE ENEMY SWARM BEGINS TO RAPIDLY DRAIN THE STRUCTURAL ENERGY SHIELDING OF THE BASE NETWORK DEFENSES. ARAFAT RUSHES FORWARD TO CONSTRUCT TEMPORARY FIELD EMISSION MEDICAL COIL STATIONS DIRECTLY ONTO THE COMBAT GRIDS. THESE GLOWING CIRCLES EMIT PURE REJUVENATING PULSES TO STABILISE THE TEAM'S FAILING VITAL SIGNS.",
+            
+            "THE LOWER ELEVATOR SHAFTS BEGIN TO WARP AND BUCKLE AS HUNDREDS OF MUTATING ALIEN ENTITIES CLAW THEIR WAY UP FROM THE DEPTHS. DAIYON AND YAKOUB SYNCHRONISE THEIR HEAVY KINETIC PLASMA LAUNCHERS TO CREATE AN ABSOLUTE WALL OF EXPLOSIVE FIRE. THE INTENSE DEFENSIVE BARRAGE LIGHTS UP THE ENTIRE SECTOR AS THEY FIGHT TO HOLD THE LINE.",
+            
+            "INSIDE THE SECURE SERVER ROOM, AADAM RUNS THOUSANDS OF COMPLEX DATA SIMULATIONS TO CRACK THE GENETIC CODE OF THE ALIEN SWARM. HE DISCOVERS A HIDDEN ANTIDOTE CIPHER THAT CAN PERMANENTLY NEUTRALIZE THE BIOLOGICAL INFECTION. HE UPLOADS THE PAYLOAD INTO THE DIAMOND COMBAT CORE, AND THE FINAL CONTAINMENT OVERRIDE GOES LIVE."
         ];
         let sPtr = 0;
+        
         function progressStory() {
             sPtr++;
             if(sPtr < scripts.length) {
-                document.getElementById("story-box").innerHTML = `<span style="color:#ff00ff; display:block; margin-bottom:15px;">// PARSING BLOCK DATA...</span>${scripts[sPtr]}`;
-                if(sPtr === scripts.length - 1) document.getElementById("story-btn").innerText = "INITIALISE GRID";
+                document.getElementById("scene-title").innerText = `⚡ CODENAME: OUTBREAK [SCENE ${sPtr + 1}/10] ⚡`;
+                document.getElementById("story-text-container").innerText = scripts[sPtr];
+                if(sPtr === scripts.length - 1) {
+                    document.getElementById("story-btn").innerText = "DEPLOY NETWORK COMBAT FORCE";
+                }
             } else {
                 document.getElementById("cutscene-screen").style.display = "none";
                 document.getElementById("menu-screen").style.display = "flex";
             }
         }
 
-        // ENGINE CONFIGURATION
+        // SIMULATOR RUNTIME VARIABLE MODULES
         let canvas, ctx, activeAgent, agentColor, ab1, ab2;
         let shield = 100, dataSync = 0, weaponLvl = 1, charge = 50;
-        let feedbackText = "GRID OPERATIONAL";
-        let textTimer = 0;
 
         const player = { x: 300, y: 300, size: 16, speed: 5.5, keys: {} };
         const cursor = { x: 0, y: 0 };
         
-        // ENTITY COMPONENT MATRICES
-        const constructs = []; // Aliens / Viruses
-        const standardShots = []; // Player Lasers
-        const techDrones = []; // Active Ability Drones
-        const defensiveZones = []; // Area of effect nodes
+        const constructs = []; 
+        const standardShots = []; 
+        const techDrones = []; 
+        const defensiveZones = []; 
 
         function spawnAgent(name, color, ability1, ability2) {
             document.getElementById("menu-screen").style.display = "none";
@@ -118,10 +134,8 @@
             player.x = canvas.width / 2;
             player.y = canvas.height / 2;
 
-            // Generate First Wave
             for(let i=0; i<8; i++) spawnAlien();
 
-            // INPUT CONTROLLER CAPTURE
             window.addEventListener('keydown', e => {
                 player.keys[e.key.toLowerCase()] = true;
                 if(e.key === '1') activatePower(1);
@@ -148,7 +162,7 @@
         }
 
         function fireCoreLaser() {
-            if(charge <= 0) { setFeedback("CORE EMPTIED - PRESS [R] TO RECHARGE"); return; }
+            if(charge <= 0) { setFeedback("CORE OVERHEAT - R RECHARGES SYSTEM"); return; }
             charge--;
             document.getElementById("ui-ammo").innerText = `${charge}/50`;
 
@@ -160,13 +174,11 @@
             });
         }
 
-        // MATRIX SYSTEM POWERS
         function activatePower(tier) {
             let activePowerName = (tier === 1) ? ab1 : ab2;
-            setFeedback(`SYSTEM: ${activePowerName.toUpperCase()} DEPLOYED`);
+            setFeedback(`DEPLOYED POWER: ${activePowerName.toUpperCase()}`);
 
-            if(activeAgent === "Aadam" || name === "Aadam") {
-                // Spawn autonomous support drone
+            if(activeAgent === "Aadam") {
                 techDrones.push({ x: player.x + 30, y: player.y - 30, angle: 0, rad: 40, color: agentColor });
             }
             if(activeAgent === "Yakoub" && tier === 2) {
@@ -185,17 +197,14 @@
         function rechargeCore() {
             charge = 50;
             document.getElementById("ui-ammo").innerText = "50/50";
-            setFeedback("BATTERY CHARGE RECONSTITUTED");
+            setFeedback("BATTERY CHARGE STABILIZED");
         }
 
         function setFeedback(txt) {
-            feedbackText = txt;
             document.getElementById("footer-bar").innerText = `// ${txt.toUpperCase()}`;
         }
 
-        // SIMULATION COMPUTATION CORE
         function updateSimulation() {
-            // Player Movement Translation Matrix
             let mx = 0, my = 0;
             if(player.keys['w']) my -= 1;
             if(player.keys['s']) my += 1;
@@ -208,7 +217,6 @@
                 player.y += (my / len) * player.speed;
             }
 
-            // Update Field Laser Projectiles
             for(let i = standardShots.length - 1; i >= 0; i--) {
                 let shot = standardShots[i];
                 shot.x += shot.dx;
@@ -218,13 +226,10 @@
                 }
             }
 
-            // Update Companion Orbitals
             techDrones.forEach(drone => {
                 drone.angle += 0.05;
                 drone.x = player.x + Math.cos(drone.angle) * drone.rad;
                 drone.y = player.y + Math.sin(drone.angle) * drone.rad;
-                
-                // Automatic Defensive Weapon Intercept
                 if(Math.random() < 0.05 && constructs.length > 0) {
                     standardShots.push({
                         x: drone.x, y: drone.y,
@@ -234,7 +239,6 @@
                 }
             });
 
-            // Update Field Effect Emitters
             for(let i = defensiveZones.length - 1; i >= 0; i--) {
                 let zone = defensiveZones[i];
                 zone.pulse += 1;
@@ -249,27 +253,23 @@
                 if(zone.pulse > 200) defensiveZones.splice(i, 1);
             }
 
-            // Alien Collision Processing Loop
             for(let c = constructs.length - 1; c >= 0; c--) {
                 let alien = constructs[c];
                 let adx = player.x - alien.x;
                 let ady = player.y - alien.y;
                 let dist = Math.sqrt(adx*adx + ady*ady);
 
-                // Tracking Path Algorithm
                 if(dist > 2) {
                     alien.x += (adx / dist) * alien.speed;
                     alien.y += (ady / dist) * alien.speed;
                 }
 
-                // Core Infraction Damage
                 if(dist < player.size + alien.size) {
                     shield -= 0.2;
                     if(shield < 0) shield = 0;
                     document.getElementById("ui-hp").innerText = `${Math.floor(shield)}%`;
                 }
 
-                // Check Proximity Intercept to Shots
                 for(let s = standardShots.length - 1; s >= 0; s--) {
                     let shot = standardShots[s];
                     let sdx = shot.x - alien.x;
@@ -282,7 +282,7 @@
                             dataSync += 10;
                             document.getElementById("ui-cash").innerText = `${dataSync}/100`;
                             spawnAlien();
-                            spawnAlien(); // Ramp scaling challenge factors
+                            spawnAlien(); 
                         }
                         break;
                     }
@@ -290,11 +290,9 @@
             }
         }
 
-        // VECTOR GRAPHICS RENDERING SYSTEM
         function renderEngine() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Field Rings
             defensiveZones.forEach(zone => {
                 ctx.beginPath();
                 ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI*2);
@@ -303,7 +301,7 @@
                 ctx.stroke();
             });
 
-            // Draw Diamond Core Combat Unit (Player)
+            // Diamond Mech Core (No Stickman)
             ctx.save();
             ctx.translate(player.x, player.y);
             ctx.beginPath();
@@ -317,9 +315,8 @@
             ctx.shadowColor = agentColor;
             ctx.fill();
             ctx.restore();
-            ctx.shadowBlur = 0; // Clear pass values
+            ctx.shadowBlur = 0; 
 
-            // Draw Active Drone Companion Core Nodes
             techDrones.forEach(drone => {
                 ctx.beginPath();
                 ctx.arc(drone.x, drone.y, 6, 0, Math.PI*2);
@@ -327,7 +324,6 @@
                 ctx.fill();
             });
 
-            // Draw Core Micro Laser Tracks
             standardShots.forEach(shot => {
                 ctx.beginPath();
                 ctx.arc(shot.x, shot.y, 3, 0, Math.PI*2);
@@ -335,7 +331,7 @@
                 ctx.fill();
             });
 
-            // Draw Triangle Threat Nodes (Aliens)
+            // Enemy Threat Nodes
             constructs.forEach(alien => {
                 ctx.save();
                 ctx.translate(alien.x, alien.y);
@@ -349,7 +345,6 @@
                 ctx.restore();
             });
 
-            // Render HUD Crosshair Rings
             ctx.beginPath();
             ctx.arc(cursor.x, cursor.y, 8, 0, Math.PI*2);
             ctx.strokeStyle = "#ff0055";
