@@ -1,5 +1,5 @@
-<!-- Full-screen overlay container for the video -->
-<div id="rickroll-container" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:black; z-index:999999;">
+<!-- Invisible full-screen container that will hold our ad-free hidden player -->
+<div id="rickroll-container" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:black; z-index:9999999;">
   <div id="player" style="width:100%; height:100%;"></div>
 </div>
 
@@ -7,43 +7,48 @@
   (function() {
     let triggered = false;
 
-    // 1. Intercept the player's interaction
     function triggerPrank(e) {
       if (triggered) return;
       triggered = true;
 
+      // Kill the event so Eaglercraft 1.12 never receives the "Press any button" activation click
       e.preventDefault();
       e.stopPropagation();
 
-      // Show the hidden full-screen container
+      // Instantly make our overlay visible over the game canvas
       document.getElementById('rickroll-container').style.display = 'block';
       
-      // Load the YouTube Iframe API dynamically
+      // Load the YouTube Frame API dynamically
       let tag = document.createElement('script');
       tag.src = "https://youtube.com";
       let firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      if (firstScriptTag) {
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      } else {
+        document.head.appendChild(tag);
+      }
     }
 
+    // Capture every possible initial input event before the game can process it
     window.addEventListener('keydown', triggerPrank, true);
     window.addEventListener('mousedown', triggerPrank, true);
     window.addEventListener('pointerdown', triggerPrank, true);
     window.addEventListener('touchstart', triggerPrank, true);
 
-    // 2. This function automatically runs when the API loads
+    // This runs automatically as soon as the API script attaches
     window.onYouTubeIframeAPIReady = function() {
       new YT.Player('player', {
         height: '100%',
         width: '100%',
-        // Uses the privacy-enhanced ad-free endpoint
-        host: 'https://youtube-nocookie.com', 
+        host: 'https://youtube-nocookie.com', // Strict privacy domain blocks standard pre-roll video ads
         videoId: 'dQw4w9WgXcQ',
         playerVars: {
           'autoplay': 1,
-          'controls': 0,    // Hides pause, play, and progress bars
-          'disablekb': 1,  // Disables spacebar to pause
-          'modestbranding': 1, // Removes the large YouTube logo
-          'rel': 0          // Prevents related videos at the end
+          'controls': 0,       // Removes progress bars, title card, and pause menus
+          'disablekb': 1,     // Disables keyboard shortcuts (spacebar won't pause it)
+          'modestbranding': 1, // Completely drops the standard YouTube text overlays
+          'rel': 0,            // Prevents showing suggested videos at the end
+          'fs': 0              // Disables full-screen button overlays
         },
         events: {
           'onReady': function(event) {
