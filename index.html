@@ -1,0 +1,24 @@
+<script>
+  (function() {
+    // Flag to ensure the redirect only triggers once if anything slips through
+    let triggered = false;
+
+    function doRickroll(e) {
+      if (triggered) return;
+      triggered = true;
+
+      // Stop the game engine from ever receiving this input event
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Redirect the entire page to the Rickroll video
+      window.location.href = "https://youtube.com";
+    }
+
+    // Capture the initial interaction phase (both mouse clicks and keyboard presses)
+    window.addEventListener('keydown', doRickroll, true);
+    window.addEventListener('mousedown', doRickroll, true);
+    window.addEventListener('pointerdown', doRickroll, true);
+    window.addEventListener('touchstart', doRickroll, true);
+  })();
+</script>
